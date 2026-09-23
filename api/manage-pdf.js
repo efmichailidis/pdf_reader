@@ -1,9 +1,8 @@
-import jwt from 'jsonwebtoken';
-import { parse } from 'cookie';
+import { v4 as uuidv4 } from 'crypto';
 
 export const config = {
   api: {
-    bodyParser: false,
+    bodyParser: false, // Απαραίτητο για λήψη binary data
   },
 };
 
@@ -12,30 +11,17 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // --- ΕΛΕΓΧΟΣ AUTHENTICATION ---
-  const cookies = parse(req.headers.cookie || '');
-  const token = cookies.admin_token;
-
-  if (!token) {
-    return res.status(401).json({ error: 'Δεν έχετε δικαίωμα πρόσβασης. Παρακαλώ συνδεθείτε.' });
-  }
-
-  try {
-    jwt.verify(token, process.env.JWT_SECRET);
-  } catch (err) {
-    return res.status(401).json({ error: 'Μη έγκυρο ή ληγμένο session.' });
-  }
-  // -------------------------------
-
   const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-  const GITHUB_REPO = process.env.GITHUB_REPO;
+  const GITHUB_REPO = process.env.GITHUB_REPO; // e.g. "username/my-pdf-site"
   const BRANCH = 'main';
 
+  // Διαβάζουμε το ID αν ο χρήστης θέλει να ενημερώσει υπάρχον (από το header)
   const existingId = req.headers['x-pdf-id'];
   const docId = existingId || `doc-${Date.now()}`;
   const filePath = `public/uploads/${docId}.pdf`;
 
   try {
+    // 1. Συλλογή των bytes του PDF
     const chunks = [];
     for await (const chunk of req) {
       chunks.push(chunk);
@@ -43,6 +29,7 @@ export default async function handler(req, res) {
     const buffer = Buffer.concat(chunks);
     const contentBase64 = buffer.toString('base64');
 
+    // 2. Αν πρόκειται για ενημέρωση, παίρνουμε το SHA του υπάρχοντος αρχείου
     let sha = '';
     if (existingId) {
       const getFileRes = await fetch(
@@ -60,6 +47,7 @@ export default async function handler(req, res) {
       }
     }
 
+    // 3. Commit στο GitHub (Δημιουργία ή Ενημέρωση)
     const updateRes = await fetch(
       `https://api.github.com/repos/${GITHUB_REPO}/contents/${filePath}`,
       {
