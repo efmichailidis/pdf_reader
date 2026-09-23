@@ -36,12 +36,7 @@
   </div>
 
   <script>
-    // Μέσα στο eventListener του form στο admin.html:
-    if (response.status === 401) {
-      alert('Η συνεδρία σας έληξε ή δεν είστε συνδεδεμένος.');
-      window.location.href = '/login.html';
-      return;
-    }
+    
     const form = document.getElementById('pdf-form');
     const resultDiv = document.getElementById('result');
 
@@ -68,6 +63,12 @@
           body: file,
         });
 
+        if (response.status === 401) {
+          alert('Η συνεδρία σας έληξε ή δεν είστε συνδεδεμένος.');
+          window.location.href = '/login.html';
+          return;
+        }
+        
         const data = await response.json();
 
         if (response.ok) {
