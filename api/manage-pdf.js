@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   // Διαβάζουμε το ID αν ο χρήστης θέλει να ενημερώσει υπάρχον (από το header)
   const existingId = req.headers['x-pdf-id'];
   const docId = existingId || `doc-${Date.now()}`;
-  const filePath = `public/uploads/${docId}.pdf`;
+  const filePath = `assets/${docId}.pdf`;
 
   try {
     // 1. Συλλογή των bytes του PDF
