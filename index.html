@@ -1,64 +1,164 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
-<!-- Container με μέγιστο πλάτος και κεντράρισμα -->
-<div id="pdf-container" style="width: 100%; max-width: 900px; margin: 0 auto;"></div>
-
-<script>
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-  const url = '/assets/chart.pdf';
-  const container = document.getElementById('pdf-container');
-  let pdfDoc = null;
-
-  async function renderAllPages() {
-    if (!pdfDoc) return;
-
-    // Καθαρισμός του container πριν το σχεδιασμό (π.χ. σε περίπτωση resize)
-    container.innerHTML = '';
-
-    // Υπολογισμός του διαθέσιμου πλάτους του container
-    const containerWidth = container.clientWidth;
-
-    for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
-      const page = await pdfDoc.getPage(pageNum);
-
-      // Παίρνουμε το αρχικό viewport για να βρούμε το φυσικό πλάτος της σελίδας
-      const unscaledViewport = page.getViewport({ scale: 1 });
-      
-      // Υπολογίζουμε το scale ώστε να χωράει ακριβώς στο πλάτος του container
-      const scale = containerWidth / unscaledViewport.width;
-      const viewport = page.getViewport({ scale: scale });
-
-      const canvas = document.createElement('canvas');
-      canvas.style.display = 'block';
-      canvas.style.marginBottom = '20px';
-      canvas.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
-      canvas.style.width = '100%'; // Διασφαλίζει ότι δεν θα ξεπεράσει το container
-
-      const context = canvas.getContext('2d');
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
-
-      container.appendChild(canvas);
-
-      await page.render({ canvasContext: context, viewport: viewport }).promise;
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=no">
+  <title>PDF Viewer με Pinch-to-Zoom</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f9;
+      margin: 0;
+      padding: 10px;
+      touch-action: pan-x pan-y; /* Επιτρέπει το scroll αλλά ελέγχουμε το pinch */
     }
-  }
 
-  // Αρχική φόρτωση του PDF
-  pdfjsLib.getDocument(url).promise.then(pdf => {
-    pdfDoc = pdf;
-    renderAllPages();
-  }).catch(err => {
-    console.error('Σφάλμα φόρτωσης PDF:', err);
-  });
+    /* Container που δέχεται το CSS transform κατά το pinch */
+    #pdf-wrapper {
+      transform-origin: 0 0;
+      transition: transform 0.05s ease-out;
+      width: 100%;
+    }
 
-  // Αυτόματος επανασχεδιασμός όταν αλλάζει το μέγεθος της οθόνης (με debounce για απόδοση)
-  let resizeTimeout;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
+    #pdf-container {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    canvas {
+      display: block;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 100%;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+
+  <!-- Wrapper για ομαλό CSS scaling κατά το pinch -->
+  <div id="pdf-wrapper">
+    <div id="pdf-container"></div>
+  </div>
+
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const wrapper = document.getElementById('pdf-wrapper');
+    const container = document.getElementById('pdf-container');
+
+    const url = '/assets/chart.pdf?v=' + new Date().getTime();
+    let pdfDoc = null;
+    let baseScale = 1.0;
+    let userZoomFactor = 1.0;
+
+    // Μεταβλητές για τον υπολογισμό του Touch / Pinch
+    let startPinchDistance = 0;
+    let initialZoomFactor = 1.0;
+    let isPinching = false;
+
+    // Υπολογισμός απόστασης μεταξύ 2 δαχτύλων
+    function getPinchDistance(e) {
+      return Math.hypot(
+        e.touches[0].pageX - e.touches[1].pageX,
+        e.touches[0].pageY - e.touches[1].pageY
+      );
+    }
+
+    async function calculateBaseScale() {
+      if (!pdfDoc) return 1.0;
+      const page = await pdfDoc.getPage(1);
+      const unscaledViewport = page.getViewport({ scale: 1 });
+      const containerWidth = container.clientWidth || 900;
+      return containerWidth / unscaledViewport.width;
+    }
+
+    async function renderAllPages() {
+      if (!pdfDoc) return;
+
+      container.innerHTML = '';
+      const currentScale = baseScale * userZoomFactor;
+
+      for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+        const page = await pdfDoc.getPage(pageNum);
+        const viewport = page.getViewport({ scale: currentScale });
+
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        container.appendChild(canvas);
+
+        await page.render({ canvasContext: context, viewport: viewport }).promise;
+      }
+    }
+
+    // Αρχική Φόρτωση
+    pdfjsLib.getDocument(url).promise.then(async (pdf) => {
+      pdfDoc = pdf;
+      baseScale = await calculateBaseScale();
       renderAllPages();
-    }, 300); // Περιμένει 300ms αφού σταματήσει το resize
-  });
-</script>
+    });
+
+    // --- ΧΕΙΡΙΣΜΟΣ TOUCH / PINCH EVENTS ---
+
+    document.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) {
+        isPinching = true;
+        startPinchDistance = getPinchDistance(e);
+        initialZoomFactor = userZoomFactor;
+      }
+    }, { passive: false });
+
+    document.addEventListener('touchmove', (e) => {
+      if (isPinching && e.touches.length === 2) {
+        e.preventDefault(); // Αποφυγή του native browser zoom
+
+        const currentDistance = getPinchDistance(e);
+        const pinchScale = currentDistance / startPinchDistance;
+
+        // Υπολογισμός προσωρινού zoom factor με όρια (0.8x έως 3.0x)
+        let tempZoom = initialZoomFactor * pinchScale;
+        tempZoom = Math.min(Math.max(tempZoom, 0.8), 3.0);
+
+        // Εφαρμογή στιγμιαίου CSS scale για 60fps smoothness
+        const cssScale = tempZoom / userZoomFactor;
+        wrapper.style.transform = `scale(${cssScale})`;
+      }
+    }, { passive: false });
+
+    document.addEventListener('touchend', (e) => {
+      if (isPinching && e.touches.length < 2) {
+        isPinching = false;
+
+        // Παίρνουμε το τρέχον CSS scale και ενημερώνουμε τη μεταβλητή userZoomFactor
+        const transformMatrix = window.getComputedStyle(wrapper).transform;
+        if (transformMatrix !== 'none') {
+          const matrixValues = transformMatrix.match(/matrix\((.+)\)/);
+          if (matrixValues) {
+            const scaleApplied = parseFloat(matrixValues[1].split(',')[0]);
+            userZoomFactor = Math.min(Math.max(userZoomFactor * scaleApplied, 0.8), 3.0);
+          }
+        }
+
+        // Επαναφορά του CSS transform και καθαρό re-render υψηλής ανάλυσης
+        wrapper.style.transform = 'none';
+        renderAllPages();
+      }
+    });
+
+    // Responsive προσαρμογή στο Resize / Orientation change
+    window.addEventListener('resize', async () => {
+      baseScale = await calculateBaseScale();
+      renderAllPages();
+    });
+  </script>
+
+</body>
+</html>
