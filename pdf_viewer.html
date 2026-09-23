@@ -1,0 +1,47 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<!-- Container όπου θα μπαίνουν τα canvas όλων των σελίδων -->
+<div id="pdf-container"></div>
+
+<script>
+  // Ορισμός του worker που απαιτεί η PDF.js (απαραίτητο για μεγάλες βιβλιοθήκες)
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  const url = '/assets/chart.pdf';
+  const container = document.getElementById('pdf-container');
+
+  async function renderAllPages() {
+    try {
+      // Φόρτωση του εγγράφου
+      const pdf = await pdfjsLib.getDocument(url).promise;
+
+      // Διατρέχουμε όλες τις σελίδες μία προς μία
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+
+        // Δημιουργούμε ένα νέο canvas element για κάθε σελίδα
+        const canvas = document.createElement('canvas');
+        canvas.style.display = 'block';
+        canvas.style.marginBottom = '20px'; // Κενό ανάμεσα στις σελίδες
+        canvas.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)'; // Προαιρετικό styling
+
+        const context = canvas.getContext('2d');
+        const viewport = page.getViewport({ scale: 1.5 });
+
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        // Προσθέτουμε το canvas στο αρχικό container
+        container.appendChild(canvas);
+
+        // Σχεδιάζουμε τη σελίδα στο canvas
+        await page.render({ canvasContext: context, viewport: viewport }).promise;
+      }
+    } catch (error) {
+      console.error('Σφάλμα κατά τη φόρτωση του PDF:', error);
+    }
+  }
+
+  // Εκτέλεση της συνάρτησης
+  renderAllPages();
+</script>
