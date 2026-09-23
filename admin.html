@@ -39,7 +39,7 @@
     // Μέσα στο eventListener του form στο admin.html:
     if (response.status === 401) {
       alert('Η συνεδρία σας έληξε ή δεν είστε συνδεδεμένος.');
-      window.location.href = '/login.html';
+      window.location.replace = '/login.html';
       return;
     }
     const form = document.getElementById('pdf-form');
