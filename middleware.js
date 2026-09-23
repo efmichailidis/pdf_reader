@@ -1,11 +1,13 @@
+
 export const config = {
-  matcher: '/:path*', // Εφαρμόζεται σε όλες τις σελίδες
+  // Εφαρμόζεται ΜΟΝΟ στη σελίδα διαχείρισης και στο API ανεβάσματος
+  matcher: ['/admin.html', '/api/manage-pdf'],
 };
 
 export default function middleware(request) {
   // Ορίστε το username και το password που θέλετε
-  const USERNAME = 'admin';
-  const PASSWORD = 'pAH09G1mBYncJ2tYG';
+  const USERNAME = process.env.ADMIN_USERNAME || 'admin';
+  const PASSWORD = process.env.ADMIN_PASSWORD || 'pAH09G1mBYncJ2tYG';
 
   const basicAuth = request.headers.get('authorization');
 
@@ -19,11 +21,12 @@ export default function middleware(request) {
     }
   }
 
-  // Αν δεν υπάρχουν στοιχεία ή είναι λάθος, ζήτα αυθεντικοποίηση
-  return new Response('Auth required', {
+  // Ζητάει από τον browser να εμφανίσει το παράθυρο σύνδεσης (Basic Auth)
+  return new Response('Απαιτείται σύνδεση.', {
     status: 401,
     headers: {
-      'WWW-Authenticate': 'Basic realm="Secure Area"',
+      'WWW-Authenticate': 'Basic realm="Secure Admin Area"',
     },
   });
+  
 }
