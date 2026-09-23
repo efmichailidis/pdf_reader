@@ -1,47 +1,64 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
-<!-- Container όπου θα μπαίνουν τα canvas όλων των σελίδων -->
-<div id="pdf-container"></div>
+<!-- Container με μέγιστο πλάτος και κεντράρισμα -->
+<div id="pdf-container" style="width: 100%; max-width: 900px; margin: 0 auto;"></div>
 
 <script>
-  // Ορισμός του worker που απαιτεί η PDF.js (απαραίτητο για μεγάλες βιβλιοθήκες)
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
   const url = '/assets/chart.pdf';
   const container = document.getElementById('pdf-container');
+  let pdfDoc = null;
 
   async function renderAllPages() {
-    try {
-      // Φόρτωση του εγγράφου
-      const pdf = await pdfjsLib.getDocument(url).promise;
+    if (!pdfDoc) return;
 
-      // Διατρέχουμε όλες τις σελίδες μία προς μία
-      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-        const page = await pdf.getPage(pageNum);
+    // Καθαρισμός του container πριν το σχεδιασμό (π.χ. σε περίπτωση resize)
+    container.innerHTML = '';
 
-        // Δημιουργούμε ένα νέο canvas element για κάθε σελίδα
-        const canvas = document.createElement('canvas');
-        canvas.style.display = 'block';
-        canvas.style.marginBottom = '20px'; // Κενό ανάμεσα στις σελίδες
-        canvas.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)'; // Προαιρετικό styling
+    // Υπολογισμός του διαθέσιμου πλάτους του container
+    const containerWidth = container.clientWidth;
 
-        const context = canvas.getContext('2d');
-        const viewport = page.getViewport({ scale: 1.5 });
+    for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+      const page = await pdfDoc.getPage(pageNum);
 
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
+      // Παίρνουμε το αρχικό viewport για να βρούμε το φυσικό πλάτος της σελίδας
+      const unscaledViewport = page.getViewport({ scale: 1 });
+      
+      // Υπολογίζουμε το scale ώστε να χωράει ακριβώς στο πλάτος του container
+      const scale = containerWidth / unscaledViewport.width;
+      const viewport = page.getViewport({ scale: scale });
 
-        // Προσθέτουμε το canvas στο αρχικό container
-        container.appendChild(canvas);
+      const canvas = document.createElement('canvas');
+      canvas.style.display = 'block';
+      canvas.style.marginBottom = '20px';
+      canvas.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+      canvas.style.width = '100%'; // Διασφαλίζει ότι δεν θα ξεπεράσει το container
 
-        // Σχεδιάζουμε τη σελίδα στο canvas
-        await page.render({ canvasContext: context, viewport: viewport }).promise;
-      }
-    } catch (error) {
-      console.error('Σφάλμα κατά τη φόρτωση του PDF:', error);
+      const context = canvas.getContext('2d');
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+
+      container.appendChild(canvas);
+
+      await page.render({ canvasContext: context, viewport: viewport }).promise;
     }
   }
 
-  // Εκτέλεση της συνάρτησης
-  renderAllPages();
+  // Αρχική φόρτωση του PDF
+  pdfjsLib.getDocument(url).promise.then(pdf => {
+    pdfDoc = pdf;
+    renderAllPages();
+  }).catch(err => {
+    console.error('Σφάλμα φόρτωσης PDF:', err);
+  });
+
+  // Αυτόματος επανασχεδιασμός όταν αλλάζει το μέγεθος της οθόνης (με debounce για απόδοση)
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      renderAllPages();
+    }, 300); // Περιμένει 300ms αφού σταματήσει το resize
+  });
 </script>
