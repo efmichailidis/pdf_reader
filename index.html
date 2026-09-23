@@ -30,7 +30,7 @@
     if (!docId) {
       container.innerHTML = '<p style="color:white;">Δεν ορίστηκε αναγνωριστικό εγγράφου (?id=...).</p>';
     } else {
-      const pdfUrl = `/uploads/${docId}.pdf?v=` + new Date().getTime();
+      const pdfUrl = `/public/uploads/${docId}.pdf?v=` + new Date().getTime();
       renderPDF(pdfUrl);
     }
 
