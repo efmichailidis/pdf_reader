@@ -4,63 +4,80 @@
   <meta charset="UTF-8">
   <title>Διαχείριση PDF</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #eef2f5; padding: 40px; }
-    .card { background: white; padding: 30px; border-radius: 8px; max-width: 500px; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    button { background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-    button:hover { background: #218838; }
-    #status { margin-top: 15px; font-weight: bold; }
+    body { font-family: Arial, sans-serif; background: #eef2f5; padding: 30px; }
+    .card { background: white; padding: 25px; border-radius: 8px; max-width: 500px; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    input, button { width: 100%; padding: 10px; margin-top: 10px; box-sizing: border-box; }
+    button { background: #28a745; color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; }
+    #result { margin-top: 15px; word-break: break-all; }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <h2>Συντήρηση / Ενημέρωση PDF</h2>
-    <p>Ανεβάστε το νέο αρχείο PDF για να αντικαταστήσετε το υπάρχον στην αρχική σελίδα.</p>
+    <h2>Διαχείριση PDF Documents</h2>
+    
+    <form id="pdf-form">
+      <label>
+        <strong>ID Εγγράφου (Αφήστε το κενό για ΝΕΟ έγγραφο):</strong>
+        <input type="text" id="pdf-id" placeholder="π.χ. doc-171112233" />
+      </label>
 
-    <form id="upload-form">
-      <input type="file" id="pdf-file" accept="application/pdf" required /><br><br>
-      <button type="submit">Αποστολή & Αντικατάσταση</button>
+      <br><br>
+
+      <label>
+        <strong>Επιλέξτε Αρχείο PDF:</strong>
+        <input type="file" id="pdf-file" accept="application/pdf" required />
+      </label>
+
+      <button type="submit">Αποστολή / Ενημέρωση</button>
     </form>
 
-    <div id="status"></div>
-    <br>
-    <a href="/index.html" target="_blank">🔍 Προβολή Αρχικής Σελίδας</a>
+    <div id="result"></div>
   </div>
 
   <script>
-    const form = document.getElementById('upload-form');
-    const statusDiv = document.getElementById('status');
+    const form = document.getElementById('pdf-form');
+    const resultDiv = document.getElementById('result');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      
+
       const fileInput = document.getElementById('pdf-file');
+      const docIdInput = document.getElementById('pdf-id').value.trim();
       const file = fileInput.files[0];
+
       if (!file) return;
 
-      statusDiv.style.color = 'black';
-      statusDiv.textContent = 'Ενημέρωση GitHub repository...';
+      resultDiv.innerHTML = '⏳ Αποστολή στο GitHub...';
+
+      const headers = {};
+      if (docIdInput) {
+        headers['x-pdf-id'] = docIdInput; // Στέλνουμε το ID αν πρόκειται για update
+      }
 
       try {
-        const response = await fetch('/api/upload', {
+        const response = await fetch('/api/manage-pdf', {
           method: 'POST',
-          body: file, // Στέλνουμε το raw PDF file
+          headers: headers,
+          body: file,
         });
 
         const data = await response.json();
 
         if (response.ok) {
-          statusDiv.style.color = 'green';
-          statusDiv.textContent = '✅ ' + data.message;
+          resultDiv.innerHTML = `
+            <p style="color:green;">✅ ${data.message}</p>
+            <p><strong>ID Εγγράφου:</strong> ${data.id}</p>
+            <p><strong>URL Προβολής:</strong> <a href="${data.url}" target="_blank">${data.url}</a></p>
+          `;
+          form.reset();
         } else {
           throw new Error(data.error);
         }
       } catch (err) {
-        statusDiv.style.color = 'red';
-        statusDiv.textContent = '❌ Σφάλμα: ' + err.message;
+        resultDiv.innerHTML = `<p style="color:red;">❌ Σφάλμα: ${err.message}</p>`;
       }
     });
-
   </script>
 
 </body>
