@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 export const config = {
-  matcher: ['/admin.html', '/api/manage-pdf', '/viewer.html'],
+  matcher: ['/admin.html', '/api/manage-pdf', '/index.html'],
 };
 
 export default function middleware(request) {
