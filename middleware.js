@@ -8,13 +8,17 @@ export default function middleware(request) {
 
   const ALLOWED_DOMAIN = 'https://app.sklavenitismentor.gr';
 
-  // --- ΕΛΕΓΧΟΣ 1: Αποκλεισμός Απευθείας Πρόσβασης στο Viewer ---
+  // --- ΕΛΕΓΧΟΣ 1: Πρόσβαση στο Viewer (Iframe Ή Κλικ από Admin) ---
   if (pathname === '/index.html' || pathname === '/viewer.html') {
     const fetchDest = request.headers.get('sec-fetch-dest');
+    const referer = request.headers.get('referer') || '';
 
-    // Αν κάποιος προσπαθεί να το ανοίξει απευθείας (document) και όχι σε iframe
-    if (fetchDest === 'document') {
-      return new Response('⛔ Δεν επιτρέπεται η πρόσβαση.', {
+    // Ελέγχουμε αν το αίτημα προέρχεται από το admin.html
+    const isFromAdmin = referer.includes('/admin.html');
+
+    // ΑνΔΕΝ είναι σε iframe ΚΑΙ ΔΕΝ προέρχεται από το admin.html -> Μπλοκάρισμα
+    if (fetchDest === 'document' && !isFromAdmin) {
+      return new Response('⛔ Η πρόσβαση επιτρέπεται μόνο μέσω iframe ή από τη σελίδα Διαχείρισης (Admin).', {
         status: 403,
         headers: { 'Content-Type': 'text/html; charset=utf-8' },
       });
