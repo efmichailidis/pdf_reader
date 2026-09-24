@@ -14,7 +14,7 @@ export default function middleware(request) {
 
     // Αν κάποιος προσπαθεί να το ανοίξει απευθείας (document) και όχι σε iframe
     if (fetchDest === 'document') {
-      return new Response('⛔ Η πρόσβαση επιτρέπεται μόνο μέσω iframe.', {
+      return new Response('⛔ Δεν επιτρέπεται η πρόσβαση.', {
         status: 403,
         headers: { 'Content-Type': 'text/html; charset=utf-8' },
       });
