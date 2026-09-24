@@ -18,7 +18,7 @@ export default function middleware(request) {
 
     // ΑνΔΕΝ είναι σε iframe ΚΑΙ ΔΕΝ προέρχεται από το admin.html -> Μπλοκάρισμα
     if (fetchDest === 'document' && !isFromAdmin) {
-      return new Response('⛔ Η πρόσβαση επιτρέπεται μόνο μέσω iframe ή από τη σελίδα Διαχείρισης (Admin).', {
+      return new Response('⛔ Δεν επιτρέπεται η πρόσβαση.', {
         status: 403,
         headers: { 'Content-Type': 'text/html; charset=utf-8' },
       });
