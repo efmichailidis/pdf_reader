@@ -71,7 +71,7 @@ export default async function handler(req, res) {
       throw new Error(errorData.message || 'GitHub commit failed');
     }
 
-    const viewerUrl = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}/viewer.html?id=${docId}`;
+    const viewerUrl = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}/index.html?id=${docId}`;
 
     return res.status(200).json({
       message: existingId ? 'Το PDF ενημερώθηκε!' : 'Νέο PDF δημιουργήθηκε!',
