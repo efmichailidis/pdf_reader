@@ -11,25 +11,25 @@ export default function middleware(request) {
   const pathname = url.pathname;
   
   // Χωρίς trailing slash στο τέλος
-  const ALLOWED_DOMAIN = 'https://app.sklavenitismentor.gr';
+  // const ALLOWED_DOMAIN = 'https://app.sklavenitismentor.gr';
 
-  // --- ΕΛΕΓΧΟΣ 1: Iframe Restrictions για τις σελίδες προβολής ---
-  if (pathname === '/index.html' || pathname === '/viewer.html') {
-    const requestHeaders = new Headers(request.headers);
-    const response = NextResponse.next({
-      request: {
-        headers: requestHeaders,
-      },
-    });
+  // // --- ΕΛΕΓΧΟΣ 1: Iframe Restrictions για τις σελίδες προβολής ---
+  // if (pathname === '/index.html' || pathname === '/viewer.html') {
+  //   const requestHeaders = new Headers(request.headers);
+  //   const response = NextResponse.next({
+  //     request: {
+  //       headers: requestHeaders,
+  //     },
+  //   });
 
-    // Ορίζουμε το CSP header
-    response.headers.set(
-      'Content-Security-Policy',
-      `frame-ancestors 'self' ${ALLOWED_DOMAIN}`
-    );
+  //   // Ορίζουμε το CSP header
+  //   response.headers.set(
+  //     'Content-Security-Policy',
+  //     `frame-ancestors 'self' ${ALLOWED_DOMAIN}`
+  //   );
 
-    return response;
-  }
+  //   return response;
+  // }
 
   // --- ΕΛΕΓΧΟΣ 2: Basic Auth για το Admin & API ---
   if (pathname === '/admin.html' || pathname.startsWith('/api/manage-pdf')) {
