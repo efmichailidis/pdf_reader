@@ -1,23 +1,29 @@
 export const config = {
-  // Ορίζουμε ρητά τις διαδρομές που θέλουμε να ελέγξουμε
   matcher: ['/index.html', '/viewer.html', '/admin.html', '/api/manage-pdf'],
 };
 
 export default function middleware(request) {
-  // Χρήση του standard Web API URL
   const url = new URL(request.url);
   const pathname = url.pathname;
 
-  // Το εξωτερικό domain (ΧΩΡΙΣ slash στο τέλος)
   const ALLOWED_DOMAIN = 'https://app.sklavenitismentor.gr';
 
-  // --- ΕΛΕΓΧΟΣ 1: CSP Header για τις σελίδες Viewer ---
+  // --- ΕΛΕΓΧΟΣ 1: Αποκλεισμός Απευθείας Πρόσβασης στο Viewer ---
   if (pathname === '/index.html' || pathname === '/viewer.html') {
-    // Δημιουργούμε ένα standard Response προσθέτοντας το CSP Header
+    const fetchDest = request.headers.get('sec-fetch-dest');
+
+    // Αν κάποιος προσπαθεί να το ανοίξει απευθείας (document) και όχι σε iframe
+    if (fetchDest === 'document') {
+      return new Response('⛔ Η πρόσβαση επιτρέπεται μόνο μέσω iframe.', {
+        status: 403,
+        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      });
+    }
+
     return new Response(null, {
       status: 200,
       headers: {
-        'x-middleware-next': '1', // Λέει στο Vercel να συνεχίσει κανονικά στη σελίδα
+        'x-middleware-next': '1',
         'Content-Security-Policy': `frame-ancestors 'self' ${ALLOWED_DOMAIN}`,
       },
     });
@@ -36,19 +42,15 @@ export default function middleware(request) {
         const [user, pwd] = atob(authValue).split(':');
 
         if (user === USERNAME && pwd === PASSWORD) {
-          // Συνέχεια στο επόμενο handler
           return new Response(null, {
             headers: {
               'x-middleware-next': '1',
             },
           });
         }
-      } catch (e) {
-        // Αν αποτύχει το atob, συνεχίζει στο 401
-      }
+      } catch (e) {}
     }
 
-    // Αν τα στοιχεία είναι λάθος ή λείπουν -> 401 Unauthorized
     return new Response('Απαιτείται σύνδεση.', {
       status: 401,
       headers: {
@@ -57,7 +59,6 @@ export default function middleware(request) {
     });
   }
 
-  // Για οποιοδήποτε άλλο request, επιτρέπεται η προσπέλαση
   return new Response(null, {
     headers: {
       'x-middleware-next': '1',
