@@ -6,7 +6,7 @@ export const config = {
 
 export default function middleware(request) {
   const { pathname } = request.nextUrl;
-  const ALLOWED_DOMAIN = 'https://app.sklavenitismentor.gr'; // 👈 Το εξωτερικό domain
+  const ALLOWED_DOMAIN = 'https://app.sklavenitismentor.gr/'; // 👈 Το εξωτερικό domain
 
   // --- ΕΛΕΓΧΟΣ 1: Iframe Restrictions για το /viewer.html ---
   if (pathname === '/index.html') {
