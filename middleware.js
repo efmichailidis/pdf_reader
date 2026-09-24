@@ -6,14 +6,13 @@ export const config = {
 
 export default function middleware(request) {
   const { pathname } = request.nextUrl;
-  const ALLOWED_DOMAIN = 'https://app.sklavenitismentor.gr/'; // 👈 Το εξωτερικό domain
+  const ALLOWED_DOMAIN = 'https://app.sklavenitismentor.gr'; // 👈 Το εξωτερικό domain
 
   // --- ΕΛΕΓΧΟΣ 1: Iframe Restrictions για το /viewer.html ---
-  if (pathname === '/index.html') {
+  if (pathname === '/' || pathname === '/index.html') {
     const response = NextResponse.next();
 
-    // 'self' -> Επιτρέπει το iframe από το ίδιο σου το site (π.χ. admin.html)
-    // ${ALLOWED_DOMAIN} -> Επιτρέπει το iframe και από το εξωτερικό domain
+    // Ορίζουμε το CSP header χωρίς trailing slash
     response.headers.set(
       'Content-Security-Policy',
       `frame-ancestors 'self' ${ALLOWED_DOMAIN}`
@@ -21,7 +20,7 @@ export default function middleware(request) {
 
     return response;
   }
-
+  
   // --- ΕΛΕΓΧΟΣ 2: Basic Auth για το Admin & API ---
   const USERNAME = process.env.ADMIN_USERNAME || 'admin';
   const PASSWORD = process.env.ADMIN_PASSWORD || 'pAH09G1mBYncJ2tYG';
