@@ -17,7 +17,36 @@
   <div id="zoom-viewport">
     <div id="pdf-container"></div>
   </div>
+<script>
+  (function() {
+    const ALLOWED_DOMAIN = "https://app.sklavenitismentor.gr";
 
+    // 1. Έλεγχος αν η σελίδα τρέχει ΜΕΣΑ σε iframe
+    const isInIframe = window.self !== window.top;
+
+    if (!isInIframe) {
+      // Αν άνοιξε απευθείας στον browser -> Μπλοκάρισμα
+      document.documentElement.innerHTML = `
+        <div style="font-family:sans-serif; text-align:center; padding:50px; background:#f8d7da; color:#721c24;">
+          <h2>⛔ Δεν επιτρέπεται η απευθείας πρόσβαση</h2>
+          <p>Η σελίδα είναι προσβάσιμη μόνο μέσα από την πλατφόρμα εκπαίδευσης.</p>
+        </div>
+      `;
+      window.stop(); // Σταματάει τη φόρτωση των υπόλοιπων scripts/PDF.js
+      return;
+    }
+
+    // 2. Έλεγχος αν ο γονέας (Parent Site) είναι ο επιτρεπόμενος
+    if (document.referrer && !document.referrer.startsWith(ALLOWED_DOMAIN)) {
+      document.documentElement.innerHTML = `
+        <div style="font-family:sans-serif; text-align:center; padding:50px; background:#f8d7da; color:#721c24;">
+          <h2>⛔ Μη εξουσιοδοτημένο domain</h2>
+        </div>
+      `;
+      window.stop();
+    }
+  })();
+</script>
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
