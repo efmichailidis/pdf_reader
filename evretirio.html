@@ -74,7 +74,9 @@
   }
   .mode[aria-pressed="true"] { background: var(--solid); color: var(--solid-ink); border-color: var(--solid); }
 
-  .letters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 26px; }
+  .letters-wrap { position: relative; margin-bottom: 26px; }
+  .letters { display: flex; flex-wrap: wrap; gap: 6px; }
+  .lscroll { display: none; }
   .letter {
     min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid var(--line);
     background: var(--bg); border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer;
@@ -131,13 +133,24 @@
     .letters {
       flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
       scroll-snap-type: x proximity; scrollbar-width: none;
-      margin: 0 -14px 26px; padding: 2px 14px 6px;
+      margin: 0 -14px; padding: 2px 14px 6px;
     }
     .letters::-webkit-scrollbar { display: none; }
     .letter {
       flex: none; scroll-snap-align: start;
       min-width: 44px; height: 44px; padding: 0 10px; border-radius: 6px; font-size: 15px;
     }
+    .lscroll {
+      position: absolute; top: 2px; width: 36px; height: 44px; padding: 0;
+      display: grid; place-items: center; border: 0; border-radius: 6px; cursor: pointer;
+      background: var(--accent); color: var(--accent-ink);
+      box-shadow: 0 1px 4px rgba(42, 35, 31, .25);
+      opacity: 0; pointer-events: none; transition: opacity .15s ease;
+    }
+    .lscroll.prev { left: -8px; }
+    .lscroll.next { right: -8px; }
+    .letters-wrap.can-l .lscroll.prev,
+    .letters-wrap.can-r .lscroll.next { opacity: 1; pointer-events: auto; }
     /* Σβήσιμο στις άκρες: δείχνει ότι υπάρχουν κι άλλα γράμματα */
     .letters.fade-r {
       -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
@@ -152,7 +165,7 @@
               mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
     }
   }
-  @media (prefers-reduced-motion: reduce) { .row .caret { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .row .caret, .lscroll { transition: none; } }
 </style>
 </head>
 <body>
@@ -181,7 +194,15 @@
     <button class="mode" data-mode="unit" aria-pressed="false">Ανά Ενότητα</button>
   </div>
 
-  <nav class="letters" id="letters" aria-label="Επιλογή γράμματος"></nav>
+  <div class="letters-wrap" id="lettersWrap">
+    <nav class="letters" id="letters" aria-label="Επιλογή γράμματος"></nav>
+    <button class="lscroll prev" id="lPrev" aria-label="Προηγούμενα γράμματα" tabindex="-1">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>
+    </button>
+    <button class="lscroll next" id="lNext" aria-label="Επόμενα γράμματα" tabindex="-1">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+    </button>
+  </div>
 
   <div id="notice"></div>
   <div id="results" aria-live="polite"></div>
@@ -320,8 +341,9 @@ function renderTotals() {
 
 function renderLetters() {
   const box = $('letters');
-  box.hidden = state.mode !== 'alpha' || !!state.q;
-  if (box.hidden) return;
+  const wrap = $('lettersWrap');
+  wrap.hidden = state.mode !== 'alpha' || !!state.q;
+  if (wrap.hidden) return;
   const counts = {};
   state.topics.forEach(t => { counts[t._letter] = (counts[t._letter] || 0) + 1; });
   box.innerHTML = LETTERS.map(l => `
@@ -337,8 +359,12 @@ function renderLetters() {
 function updateFade() {
   const box = $('letters');
   const max = box.scrollWidth - box.clientWidth;
-  box.classList.toggle('fade-l', max > 2 && box.scrollLeft > 2);
-  box.classList.toggle('fade-r', max > 2 && box.scrollLeft < max - 2);
+  const l = max > 2 && box.scrollLeft > 2;
+  const r = max > 2 && box.scrollLeft < max - 2;
+  box.classList.toggle('fade-l', l);
+  box.classList.toggle('fade-r', r);
+  $('lettersWrap').classList.toggle('can-l', l);
+  $('lettersWrap').classList.toggle('can-r', r);
 }
 
 function itemHTML(t) {
@@ -420,6 +446,13 @@ $('results').addEventListener('click', e => {
 
 $('letters').addEventListener('scroll', updateFade, { passive: true });
 window.addEventListener('resize', updateFade);
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function scrollLetters(dir) {
+  const box = $('letters');
+  box.scrollBy({ left: dir * box.clientWidth * 0.7, behavior: reduceMotion ? 'auto' : 'smooth' });
+}
+$('lPrev').addEventListener('click', () => scrollLetters(-1));
+$('lNext').addEventListener('click', () => scrollLetters(1));
 
 $('letters').addEventListener('click', e => {
   const b = e.target.closest('.letter');
