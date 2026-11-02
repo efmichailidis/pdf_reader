@@ -132,7 +132,7 @@
     .tag { order: 3; }
     .letters {
       flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
-      scroll-snap-type: x proximity; scrollbar-width: none;
+      scroll-snap-type: x proximity; scroll-padding-inline: 14px; scrollbar-width: none;
       margin: 0 -14px; padding: 2px 14px 6px;
     }
     .letters::-webkit-scrollbar { display: none; }
@@ -351,7 +351,9 @@ function renderLetters() {
       ${counts[l] ? '' : 'disabled'} aria-label="${l === LATIN ? 'Λατινικοί χαρακτήρες' : 'Γράμμα ' + l}">${l}</button>`).join('');
   const sel = box.querySelector('[aria-pressed="true"]');
   if (sel && box.scrollWidth > box.clientWidth) {
-    box.scrollLeft = sel.offsetLeft - box.offsetLeft - (box.clientWidth - sel.offsetWidth) / 2;
+    const b = box.getBoundingClientRect(), r = sel.getBoundingClientRect();
+    const target = box.scrollLeft + (r.left - b.left) - (b.width - r.width) / 2;
+    box.scrollLeft = Math.max(0, Math.min(target, box.scrollWidth - box.clientWidth));
   }
   updateFade();
 }
@@ -359,8 +361,9 @@ function renderLetters() {
 function updateFade() {
   const box = $('letters');
   const max = box.scrollWidth - box.clientWidth;
-  const l = max > 2 && box.scrollLeft > 2;
-  const r = max > 2 && box.scrollLeft < max - 2;
+  const EDGE = 16; // ανοχή για snap και padding στις άκρες
+  const l = max > EDGE && box.scrollLeft > EDGE;
+  const r = max > EDGE && box.scrollLeft < max - EDGE;
   box.classList.toggle('fade-l', l);
   box.classList.toggle('fade-r', r);
   $('lettersWrap').classList.toggle('can-l', l);
