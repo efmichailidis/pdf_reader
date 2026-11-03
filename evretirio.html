@@ -150,18 +150,7 @@
     .lscroll.prev { left: -8px; }
     .lscroll.next { right: -8px; }
     .letters-wrap.can-l .lscroll.prev,
-    .letters-wrap.can-r .lscroll.next { 
-        opacity: 1; 
-        pointer-events: auto; 
-        width: 32px;
-        height: 44px;
- 
-        border-radius: 8px;
-        border: 1px solid #E0531C;
-        background: #FFFFFF;
-        /* background: #F4F0EA; */
-        color: #E0531C;
-    }
+    .letters-wrap.can-r .lscroll.next { opacity: 1; pointer-events: auto; }
     /* Σβήσιμο στις άκρες: δείχνει ότι υπάρχουν κι άλλα γράμματα */
     .letters.fade-r {
       -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
@@ -237,9 +226,9 @@ const DATA_URL = '/api/evretirio';
 const PROFILE_URL = '';
 
 const POPULAR = [
-  { label: 'Θεματολόγιο', href: 'https://app.sklavenitismentor.gr/content/page/6ac8b73f5a3cad310c94d4c1', icon: 'list' },
-  { label: 'Η Ιστορία μας', href: 'https://app.sklavenitismentor.gr/content/page/6a993a6862472b722f4cf2ae', icon: 'clock' },
-  { label: 'Τα Προϊόντα μας', href: 'https://app.sklavenitismentor.gr/content/page/6ac7ddf0e3cf8915ae3378ab', icon: 'bag' }
+  { label: 'Θεματολόγιο', href: '#', icon: 'list' },
+  { label: 'Η Ιστορία μας', href: '#', icon: 'clock' },
+  { label: 'Τα Προϊόντα μας', href: '#', icon: 'bag' }
 ];
 
 /* ---------------- Δοκιμαστικά δεδομένα ---------------- */
@@ -333,7 +322,7 @@ const ICONS = {
 };
 
 /* ---------------- State ---------------- */
-const state = { topics: [], mode: 'alpha', letter: 'Α', q: '', open: new Set() };
+const state = { topics: [], mode: 'alpha', letter: null, q: '', open: new Set() };
 const $ = id => document.getElementById(id);
 
 /* ---------------- Render ---------------- */
@@ -439,6 +428,16 @@ function renderResults() {
     return;
   }
 
+  if (!state.letter) {
+    const groups = LETTERS
+      .map(l => [l, state.topics.filter(t => t._letter === l).sort(byTitle)])
+      .filter(([, items]) => items.length);
+    out.innerHTML = groups.length
+      ? groups.map(([l, items]) => groupHTML(l, items)).join('')
+      : '<div class="empty">Δεν υπάρχουν Θέματα.</div>';
+    return;
+  }
+
   const items = state.topics.filter(t => t._letter === state.letter).sort(byTitle);
   out.innerHTML = items.length
     ? groupHTML(state.letter, items)
@@ -471,7 +470,8 @@ $('lNext').addEventListener('click', () => scrollLetters(1));
 $('letters').addEventListener('click', e => {
   const b = e.target.closest('.letter');
   if (!b || b.disabled) return;
-  state.letter = b.dataset.letter;
+  // Δεύτερο πάτημα στο ίδιο γράμμα: επιστροφή σε όλα
+  state.letter = state.letter === b.dataset.letter ? null : b.dataset.letter;
   render();
 });
 
@@ -500,8 +500,6 @@ function prepare(data) {
     _letter: letterOf(t.title),
     _search: norm([t.title, t.unit, t.custodian?.role, t.custodian?.name].join(' '))
   }));
-  const counts = new Set(state.topics.map(t => t._letter));
-  if (!counts.has(state.letter)) state.letter = LETTERS.find(l => counts.has(l)) || 'Α';
 }
 
 async function load() {
