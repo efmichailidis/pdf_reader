@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ευρετήριο</title>
 <style>
-  :root {
+    :root {
     --bg: #ffffff;
     --band: #F2EEE8;
     --ink: #2A231F;
@@ -37,7 +37,7 @@
   .wrap { max-width: 880px; margin: 0 auto; padding: 24px 20px 48px; }
 
   .popular h2 { font-size: 17px; margin: 0 0 12px; }
-  .popular-row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .popular-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
   .pop {
     display: inline-flex; align-items: center; gap: 10px; padding: 9px 12px;
     border: 1px solid var(--line); border-radius: 8px; background: var(--bg);
@@ -48,7 +48,8 @@
     width: 30px; height: 30px; border-radius: 6px; background: var(--soft);
     display: grid; place-items: center; color: var(--accent);
   }
-  .pop .chev { color: var(--accent); margin-left: 6px; }
+  .pop .chev { color: var(--accent); margin-left: auto; padding-left: 6px; }
+  .pop .ico { flex: none; }
 
   .intro { margin: 30px 0 14px; }
   .intro p { margin: 0; }
@@ -126,7 +127,7 @@
 
   @media (max-width: 560px) {
     .wrap { padding: 18px 14px 40px; }
-    .pop { flex: 1 1 100%; justify-content: space-between; }
+    .popular-row { grid-template-columns: 1fr; }
     .row { flex-wrap: wrap; }
     .row .t { flex-basis: calc(100% - 30px); }
     .tag { order: 3; }
@@ -228,9 +229,11 @@
 const DATA_URL = '/api/evretirio';
 
 const POPULAR = [
-  { label: 'Θεματολόγιο', href: '#', icon: 'list' },
-  { label: 'Η Ιστορία μας', href: '#', icon: 'clock' },
-  { label: 'Τα Προϊόντα μας', href: '#', icon: 'bag' }
+  { label: 'Οι Εγκαταστάσεις μας', href: '#', icon: 'building' },
+  { label: 'Κανονισμός Εργασίας', href: '#', icon: 'rules' },
+  { label: 'Οργανόγραμμα', href: '#', icon: 'org' },
+  { label: 'Κώδικας Δεοντολογίας', href: '#', icon: 'ethics' },
+  { label: 'Άδειες', href: '#', icon: 'calendar' },
 ];
 
 /* ---------------- Βοηθητικά ---------------- */
@@ -250,9 +253,11 @@ function letterOf(title) {
 }
 
 const ICONS = {
-  list: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 6h14M5 12h14M5 18h14"/></svg>',
-  clock: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>',
-  bag: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>',
+  building: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16"/><path d="M15 10h4a1 1 0 0 1 1 1v10"/><path d="M3 21h18"/><path d="M8 8h3M8 12h3M8 16h3"/></svg>',
+  rules: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>',
+  org: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="5" rx="1"/><rect x="3" y="16" width="6" height="5" rx="1"/><rect x="15" y="16" width="6" height="5" rx="1"/><path d="M12 8v4M6 16v-2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/></svg>',
+  ethics: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 4.5 3 8.3 7 10 4-1.7 7-5.5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg>',
+  calendar: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/><path d="m9.5 15 2 2 3.5-3.5"/></svg>',
   phone: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>',
   mail: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
   user: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
@@ -264,7 +269,7 @@ const state = { topics: [], updatedAt: null, mode: 'alpha', letter: null, q: '',
 const $ = id => document.getElementById(id);
 
 /* ---------------- Render ---------------- */
-function renderPopular() {
+function render() {
   $('popular').innerHTML = POPULAR.map(p => `
     <a class="pop" href="${esc(p.href)}">
       <span class="ico">${ICONS[p.icon] || ''}</span>${esc(p.label)}
