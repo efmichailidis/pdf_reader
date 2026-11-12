@@ -1,7 +1,7 @@
 import { google } from 'googleapis';
 
 // Όνομα φύλλου (tab) και στήλες. Άλλαξέ τα από τα env αν χρειαστεί.
-const SHEET_NAME = process.env.EVRETIRIO_SHEET?.trim() || 'Θεματολόγιον';
+const SHEET_NAME = process.env.EVRETIRIO_SHEET?.trim() || 'Θεματολόγιο';
 const RANGE = `'${SHEET_NAME.replace(/'/g, "''")}'!A1:Z`;
 
 // Αντιστοίχιση επικεφαλίδων φύλλου -> πεδία JSON.
