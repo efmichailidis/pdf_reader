@@ -1,17 +1,18 @@
 import { google } from 'googleapis';
 
 // Όνομα φύλλου (tab) και στήλες. Άλλαξέ τα από τα env αν χρειαστεί.
-const SHEET_NAME = process.env.EVRETIRIO_SHEET?.trim() || 'Θεματολόγιο';
-const RANGE = `'${SHEET_NAME.replace(/'/g, "''")}'!A1:E`;
+const SHEET_NAME = process.env.EVRETIRIO_SHEET?.trim() || 'Θεματολόγιον';
+const RANGE = `'${SHEET_NAME.replace(/'/g, "''")}'!A1:Z`;
 
 // Αντιστοίχιση επικεφαλίδων φύλλου -> πεδία JSON.
-// Αν δεν βρεθεί κάποια επικεφαλίδα, χρησιμοποιείται η θέση της στήλης (A–E).
+// Η στήλη βρίσκεται από την επικεφαλίδα της, όπου κι αν είναι στο φύλλο.
+// exact: η επικεφαλίδα πρέπει να είναι ακριβώς αυτή, αλλιώς αρκεί να ξεκινάει έτσι.
 const FIELDS = [
-  { key: 'section', header: 'ΕΝΟΤΗΤΑ', fallback: 0 },
-  { key: 'subject', header: 'ΘΕΜΑ', fallback: 1, exact: true },
-  { key: 'owner',   header: 'ΘΕΜΑΤΟΦΥΛΑΚΑΣ', fallback: 2, exact: true },
-  { key: 'name',    header: 'ΟΝΟΜΑΤΕΠΩΝΥΜΟ', fallback: 3 },
-  { key: 'phone',   header: 'ΤΗΛΕΦΩΝΟ', fallback: 4 },
+  { key: 'section', headers: ['ΕΝΟΤΗΤΑ'] },
+  { key: 'subject', headers: ['ΘΕΜΑ'], exact: true },
+  { key: 'owner',   headers: ['ΘΕΜΑΤΟΦΥΛΑΚΑΣ'], exact: true },
+  { key: 'name',    headers: ['ΟΝΟΜΑΤΕΠΩΝΥΜΟ', 'ΟΝΟΜΑ'] },
+  { key: 'phone',   headers: ['ΤΗΛΕΦΩΝΟ', 'ΤΗΛ'] },
 ];
 
 const norm = (v) =>
@@ -27,10 +28,16 @@ const clean = (v) => String(v ?? '').replace(/\s+/g, ' ').trim();
 function resolveColumns(headerRow) {
   const headers = (headerRow || []).map(norm);
   const cols = {};
+  const used = new Set();
   for (const f of FIELDS) {
-    const h = norm(f.header);
-    const idx = headers.findIndex((x) => (f.exact ? x === h : x.startsWith(h)));
-    cols[f.key] = idx >= 0 ? idx : f.fallback;
+    let idx = -1;
+    for (const h of f.headers.map(norm)) {
+      idx = headers.findIndex((x, i) => !used.has(i) && (f.exact ? x === h : x.startsWith(h)));
+      if (idx >= 0) break;
+    }
+    if (idx >= 0) used.add(idx);
+    else console.warn(`evretirio: δεν βρέθηκε στήλη για "${f.key}". Επικεφαλίδες:`, headers);
+    cols[f.key] = idx; // -1 = κενό πεδίο, ποτέ λάθος στήλη
   }
   return cols;
 }
@@ -88,7 +95,7 @@ export default async function handler(req, res) {
     const actions = [];
     dataRows.forEach((row, i) => {
       const item = { id: i + 1 }; // id = αριθμός γραμμής κάτω από τις επικεφαλίδες
-      for (const f of FIELDS) item[f.key] = clean(row[cols[f.key]]);
+      for (const f of FIELDS) item[f.key] = cols[f.key] >= 0 ? clean(row[cols[f.key]]) : '';
       if (!item.subject) return; // κενές γραμμές ή γραμμές χωρίς θέμα
       actions.push(item);
     });
@@ -101,7 +108,8 @@ export default async function handler(req, res) {
       actions,
     });
   } catch (error) {
-    console.error('evretirio API error:', error);
+    // Όχι ολόκληρο το error: περιέχει το refresh token στο config.
+    console.error('evretirio API error:', error.code || '', error.response?.data || error.message);
     return res.status(500).json({ error: 'Αποτυχία ανάγνωσης του Ευρετηρίου' });
   }
 }
