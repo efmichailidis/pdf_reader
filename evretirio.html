@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ευρετήριο</title>
 <style>
-    :root {
+  :root {
     --bg: #ffffff;
     --band: #F2EEE8;
     --ink: #2A231F;
@@ -269,7 +269,7 @@ const state = { topics: [], updatedAt: null, mode: 'alpha', letter: null, q: '',
 const $ = id => document.getElementById(id);
 
 /* ---------------- Render ---------------- */
-function render() {
+function renderPopular() {
   $('popular').innerHTML = POPULAR.map(p => `
     <a class="pop" href="${esc(p.href)}">
       <span class="ico">${ICONS[p.icon] || ''}</span>${esc(p.label)}
