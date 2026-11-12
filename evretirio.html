@@ -170,7 +170,7 @@
 </head>
 <body>
 
-<!-- <header class="band"><h1>Ευρετήριο</h1></header> -->
+<header class="band"><h1>Ευρετήριο</h1></header>
 
 <main class="wrap">
   <section class="popular" aria-labelledby="pop-h">
@@ -211,89 +211,27 @@
 <script>
 /* ------------------------------------------------------------------
    Ρυθμίσεις
-   DATA_URL: το endpoint του integration server. Αναμενόμενο JSON:
+   DATA_URL: το endpoint που επιστρέφει το JSON του ευρετηρίου:
    {
-     "topics": [
-       { "id": "t1", "title": "Άδειες Εργαζομένου", "unit": "Ανθρώπινου Δυναμικού",
-         "custodian": { "role": "Υπεύθυνος Αδειών & Απουσιών", "name": "…",
-                        "phone": "214 100 9356", "email": "…", "staffbaseUserId": "…" } }
+     "project": "Θεματολόγιον",
+     "totalActions": 360,
+     "updatedAt": "2026-11-12T11:11:23+00:00",
+     "actions": [
+       { "id": 1, "section": "Ανθρώπινου Δυναμικού", "subject": "Άδειες Εργαζομένου",
+         "owner": "Υπεύθυνος Γραφείου Αδειών & Απουσιών",
+         "name": "Κατερίνα Παναγιώτου", "phone": "214 100 9356" }
      ]
    }
-   PROFILE_URL: προαιρετικό template για link στο προφίλ Staffbase,
-   π.χ. "https://app.example.gr/profile/{id}". Αν μείνει κενό, δεν εμφανίζεται.
+   Η γραμμή επικεφαλίδων του φύλλου (ΘΕΜΑ / ΘΕΜΑΤΟΦΥΛΑΚΑΣ …) αγνοείται αυτόματα.
+   Αν κάποια στιγμή προστεθεί πεδίο "email", εμφανίζεται κι αυτό στην κάρτα.
 ------------------------------------------------------------------- */
 const DATA_URL = '/api/evretirio';
-const PROFILE_URL = '';
 
 const POPULAR = [
   { label: 'Θεματολόγιο', href: '#', icon: 'list' },
   { label: 'Η Ιστορία μας', href: '#', icon: 'clock' },
   { label: 'Τα Προϊόντα μας', href: '#', icon: 'bag' }
 ];
-
-/* ---------------- Δοκιμαστικά δεδομένα ---------------- */
-const MOCK_PEOPLE = [
-  { role: 'Υπεύθυνος Αδειών & Απουσιών', name: 'Κατερίνα Παναγιώτου', phone: '214 100 9356', email: 'k.panagiotou@example.gr' },
-  { role: 'Υπεύθυνος Διασφάλισης Ποιότητας', name: 'Νίκος Αλεξίου', phone: '214 100 9120', email: 'n.alexiou@example.gr' },
-  { role: 'Συντονιστής Δικτύου Καταστημάτων', name: 'Μαρία Δημητρίου', phone: '214 100 9402', email: 'm.dimitriou@example.gr' },
-  { role: 'Προϊστάμενος Λογιστηρίου', name: 'Γιώργος Σταύρου', phone: '214 100 9011', email: 'g.stavrou@example.gr' },
-  { role: 'Υπεύθυνος Υποστήριξης Χρηστών', name: 'Ελένη Κωνσταντίνου', phone: '214 100 9777', email: 'e.konstantinou@example.gr' },
-  { role: 'Υπεύθυνος Αξιολόγησης Προσωπικού', name: 'Δημήτρης Ιωάννου', phone: '214 100 9360', email: 'd.ioannou@example.gr' },
-  { role: 'Υπεύθυνη Εταιρικής Επικοινωνίας', name: 'Σοφία Γεωργίου', phone: '214 100 9550', email: 's.georgiou@example.gr' },
-  { role: 'Υπεύθυνος Αποθήκης', name: 'Παναγιώτης Μάρκου', phone: '214 100 9633', email: 'p.markou@example.gr' },
-  { role: 'Νομικός Σύμβουλος', name: 'Αθηνά Λαμπροπούλου', phone: '214 100 9205', email: 'a.lampropoulou@example.gr' },
-  { role: 'Υπεύθυνος Εγκαταστάσεων', name: 'Στέλιος Παπαδάκης', phone: '214 100 9888', email: 's.papadakis@example.gr' },
-  { role: 'Υπεύθυνη Εκπαίδευσης', name: 'Ιωάννα Χριστοδούλου', phone: '214 100 9310', email: 'i.christodoulou@example.gr' },
-  { role: 'Υπεύθυνος Προμηθειών', name: 'Κώστας Βασιλείου', phone: '214 100 9144', email: 'k.vasileiou@example.gr' }
-];
-const MOCK_TOPICS = [
-  ['Αγορανομικές Σημάνσεις', 'Διαχείρισης Ποιότητας', 1],
-  ['Άδειες Εργαζομένου', 'Ανθρώπινου Δυναμικού', 0],
-  ['Αιτήματα - Σχόλια Πελατών', 'Δικτύου', 2],
-  ['Αλλαντικά', 'Δικτύου', 2],
-  ['Ανακύκλωση', 'Διαχείρισης Ποιότητας', 1],
-  ['Αξιολόγηση', 'Ανθρώπινου Δυναμικού', 5],
-  ['Απογραφή', 'Οικονομικά', 3],
-  ['Αποθήκη Καταστήματος', 'Εφοδιαστικής Αλυσίδας', 7],
-  ['Βάρδιες', 'Ανθρώπινου Δυναμικού', 0],
-  ['Βεβαιώσεις Αποδοχών', 'Ανθρώπινου Δυναμικού', 0],
-  ['Γραφική Ύλη', 'Προμηθειών', 11],
-  ['Γραμματοσειρές & Λογότυπο', 'Εταιρικής Επικοινωνίας', 6],
-  ['Δίκτυο Wi-Fi Καταστημάτων', 'Πληροφορικής', 4],
-  ['Δελτία Τύπου', 'Εταιρικής Επικοινωνίας', 6],
-  ['Ενδοεταιρικές Μεταφορές', 'Εφοδιαστικής Αλυσίδας', 7],
-  ['Εκπαιδευτικά Προγράμματα', 'Εκπαίδευσης', 10],
-  ['Ζημιές Εμπορευμάτων', 'Διαχείρισης Ποιότητας', 1],
-  ['Ημερομηνίες Λήξης', 'Διαχείρισης Ποιότητας', 1],
-  ['Θέρμανση - Κλιματισμός', 'Τεχνικών Υπηρεσιών', 9],
-  ['Ιατρός Εργασίας', 'Ανθρώπινου Δυναμικού', 5],
-  ['Κάρτα Εργαζομένου', 'Ανθρώπινου Δυναμικού', 0],
-  ['Κωδικοί Πρόσβασης', 'Πληροφορικής', 4],
-  ['Λογαριασμοί Ρεύματος', 'Οικονομικά', 3],
-  ['Μισθοδοσία', 'Οικονομικά', 3],
-  ['Μεταθέσεις Προσωπικού', 'Ανθρώπινου Δυναμικού', 5],
-  ['Νομικά Θέματα Καταστημάτων', 'Νομικών Υπηρεσιών', 8],
-  ['Οπωροκηπευτικά', 'Δικτύου', 2],
-  ['Ομοιόμορφα Εργαζομένων', 'Προμηθειών', 11],
-  ['Πυρασφάλεια', 'Τεχνικών Υπηρεσιών', 9],
-  ['Προσφορές Φυλλαδίου', 'Εμπορικής Διεύθυνσης', 6],
-  ['Συμβάσεις Προμηθευτών', 'Νομικών Υπηρεσιών', 8],
-  ['Σεμινάρια Υγιεινής', 'Εκπαίδευσης', 10],
-  ['Ταμειακές Μηχανές', 'Πληροφορικής', 4],
-  ['Τεχνικές Βλάβες', 'Τεχνικών Υπηρεσιών', 9],
-  ['Υπερωρίες', 'Ανθρώπινου Δυναμικού', 0],
-  ['Φορτοεκφορτώσεις', 'Εφοδιαστικής Αλυσίδας', 7],
-  ['Χρηματαποστολές', 'Οικονομικά', 3],
-  ['Ψυγεία - Καταψύκτες', 'Τεχνικών Υπηρεσιών', 9],
-  ['Ωράριο Καταστημάτων', 'Δικτύου', 2],
-  ['SAP - Πρόσβαση Χρηστών', 'Πληροφορικής', 4],
-  ['Staffbase - Εφαρμογή Εργαζομένων', 'Εταιρικής Επικοινωνίας', 6]
-];
-const MOCK = {
-  topics: MOCK_TOPICS.map(([title, unit, p], i) => ({
-    id: 't' + (i + 1), title, unit, custodian: { ...MOCK_PEOPLE[p], staffbaseUserId: 'mock-' + p }
-  }))
-};
 
 /* ---------------- Βοηθητικά ---------------- */
 const GREEK = ['Α','Β','Γ','Δ','Ε','Ζ','Η','Θ','Ι','Κ','Λ','Μ','Ν','Ξ','Ο','Π','Ρ','Σ','Τ','Υ','Φ','Χ','Ψ','Ω'];
@@ -322,7 +260,7 @@ const ICONS = {
 };
 
 /* ---------------- State ---------------- */
-const state = { topics: [], mode: 'alpha', letter: null, q: '', open: new Set() };
+const state = { topics: [], updatedAt: null, mode: 'alpha', letter: null, q: '', open: new Set() };
 const $ = id => document.getElementById(id);
 
 /* ---------------- Render ---------------- */
@@ -336,7 +274,8 @@ function renderPopular() {
 
 function renderTotals() {
   const units = new Set(state.topics.map(t => t.unit).filter(Boolean));
-  $('totals').textContent = `${state.topics.length} Θέματα · ${units.size} Ενότητες`;
+  const upd = formatUpdated(state.updatedAt);
+  $('totals').textContent = `${state.topics.length} Θέματα · ${units.size} Ενότητες` + (upd ? ` · Ενημέρωση ${upd}` : '');
 }
 
 function renderLetters() {
@@ -374,11 +313,9 @@ function itemHTML(t) {
   const c = t.custodian || {};
   const open = state.open.has(t.id);
   const tel = (c.phone || '').replace(/[^\d+]/g, '');
-  const profile = PROFILE_URL && c.staffbaseUserId ? PROFILE_URL.replace('{id}', encodeURIComponent(c.staffbaseUserId)) : '';
   const contact = [
     c.phone ? `<a href="tel:${esc(tel)}">${ICONS.phone}${esc(c.phone)}</a>` : '',
-    c.email ? `<a href="mailto:${esc(c.email)}">${ICONS.mail}${esc(c.email)}</a>` : '',
-    profile ? `<a href="${esc(profile)}" target="_top">${ICONS.user}Προφίλ στη Staffbase</a>` : ''
+    c.email ? `<a href="mailto:${esc(c.email)}">${ICONS.mail}${esc(c.email)}</a>` : ''
   ].join('');
   return `
     <div class="item">
@@ -389,10 +326,10 @@ function itemHTML(t) {
       </button>
       <div class="panel" id="p-${esc(t.id)}" ${open ? '' : 'hidden'}>
         <div class="card">
-          ${c.name ? `
+          ${c.name || c.role ? `
             <div class="lbl">Θεματοφύλακας</div>
             ${c.role ? `<div class="role">${esc(c.role)}</div>` : ''}
-            <div class="name">${esc(c.name)}</div>
+            ${c.name ? `<div class="name">${esc(c.name)}</div>` : ''}
             ${contact}` : '<div class="none">Δεν έχει οριστεί Θεματοφύλακας για αυτό το Θέμα.</div>'}
         </div>
       </div>
@@ -494,28 +431,65 @@ $('clear').addEventListener('click', () => {
 });
 
 /* ---------------- Load ---------------- */
+const clean = v => String(v ?? '').replace(/\s+/g, ' ').trim();
+
+function isHeaderRow(a) {
+  return norm(clean(a.subject)) === norm('ΘΕΜΑ') && norm(clean(a.owner)) === norm('ΘΕΜΑΤΟΦΥΛΑΚΑΣ');
+}
+
 function prepare(data) {
-  state.topics = (data.topics || []).map(t => ({
-    ...t,
-    _letter: letterOf(t.title),
-    _search: norm([t.title, t.unit, t.custodian?.role, t.custodian?.name].join(' '))
-  }));
+  const rows = Array.isArray(data) ? data : (data.actions || []);
+  state.updatedAt = data.updatedAt || null;
+  state.topics = rows
+    .filter(a => a && clean(a.subject) && !isHeaderRow(a))
+    .map(a => {
+      const t = {
+        id: String(a.id),
+        title: clean(a.subject),
+        unit: clean(a.section),
+        custodian: {
+          role: clean(a.owner),
+          name: clean(a.name),
+          phone: clean(a.phone),
+          email: clean(a.email)
+        }
+      };
+      t._letter = letterOf(t.title);
+      t._search = norm([t.title, t.unit, t.custodian.role, t.custodian.name].join(' '));
+      return t;
+    });
+}
+
+function formatUpdated(iso) {
+  const d = iso ? new Date(iso) : null;
+  if (!d || isNaN(d)) return '';
+  return d.toLocaleString('el-GR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
 async function load() {
-  renderPopular();
+  $('notice').innerHTML = '';
+  $('results').innerHTML = '<div class="empty">Φόρτωση Θεμάτων…</div>';
   try {
-    const res = await fetch(DATA_URL, { credentials: 'include', headers: { Accept: 'application/json' } });
+    const res = await fetch(DATA_URL, { credentials: 'include', headers: { Accept: 'application/json' }, cache: 'no-store' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     prepare(await res.json());
   } catch (err) {
-    console.warn('Ευρετήριο: χρήση δοκιμαστικών δεδομένων', err);
-    prepare(MOCK);
-    $('notice').innerHTML = '<div class="notice">Εμφανίζονται δοκιμαστικά δεδομένα, επειδή το ' + esc(DATA_URL) + ' δεν απάντησε.</div>';
+    console.error('Ευρετήριο: αποτυχία φόρτωσης', err);
+    $('totals').textContent = '';
+    $('lettersWrap').hidden = true;
+    $('results').innerHTML = `
+      <div class="empty">
+        Δεν ήταν δυνατή η φόρτωση του Ευρετηρίου.<br>
+        <button class="mode" id="retry" style="margin-top:12px">Δοκιμή ξανά</button>
+      </div>`;
+    $('retry').addEventListener('click', load);
+    return;
   }
   renderTotals();
   render();
 }
+
+renderPopular();
 load();
 </script>
 </body>
