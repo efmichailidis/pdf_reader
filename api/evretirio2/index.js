@@ -89,7 +89,7 @@ export default async function handler(req, res) {
     ]);
 
     const rows = valuesRes.data.values || [];
-    // const [headerRow, ...dataRows] = rows;
+    const [headerRow, ...dataRows] = rows;
     // const cols = resolveColumns(headerRow);
 
     const actions = [];
