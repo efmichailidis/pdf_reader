@@ -338,7 +338,6 @@ function itemHTML(t) {
   const open = state.open.has(t.id);
   const tel = (c.phone || '').replace(/[^\d+]/g, '');
   const contact = [
-    c.phone ? `<a href="tel:${esc(tel)}">${ICONS.phone}${esc(c.phone)}</a>` : '',
     c.email ? `<a href="mailto:${esc(c.email)}">${ICONS.mail}${esc(c.email)}</a>` : ''
   ].join('');
   return `
