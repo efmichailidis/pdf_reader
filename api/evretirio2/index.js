@@ -1,19 +1,24 @@
 import { google } from 'googleapis';
 
-// Όνομα φύλλου (tab) και στήλες. Άλλαξέ τα από τα env αν χρειαστεί.
+// Όνομα φύλλου (tab). Διαβάζονται όλες οι στήλες του, όσα αρχεία κι αν προστεθούν.
 const SHEET_NAME = process.env.EVRETIRIO2_SHEET?.trim() || 'Θεματολόγιο';
-const RANGE = `'${SHEET_NAME.replace(/'/g, "''")}'!A1:Z`;
+const RANGE = `'${SHEET_NAME.replace(/'/g, "''")}'`;
 
 // Αντιστοίχιση επικεφαλίδων φύλλου -> πεδία JSON.
-// Η στήλη βρίσκεται από την επικεφαλίδα της, όπου κι αν είναι στο φύλλο.
 // exact: η επικεφαλίδα πρέπει να είναι ακριβώς αυτή, αλλιώς αρκεί να ξεκινάει έτσι.
 const FIELDS = [
+  { key: 'id',      headers: ['Α/Α', 'ΑΑ'], exact: true },
   { key: 'section', headers: ['ΕΝΟΤΗΤΑ'] },
   { key: 'subject', headers: ['ΘΕΜΑ'], exact: true },
   { key: 'owner',   headers: ['ΘΕΜΑΤΟΦΥΛΑΚΑΣ'], exact: true },
-  { key: 'name',    headers: ['ΟΝΟΜΑΤΕΠΩΝΥΜΟ', 'ΟΝΟΜΑ'] },
+  { key: 'name',    headers: ['ΟΝΟΜΑΤΕΠΩΝΥΜΟ'] },
   { key: 'phone',   headers: ['ΤΗΛΕΦΩΝΟ', 'ΤΗΛ'] },
+  { key: 'email',   headers: ['EMAIL', 'E-MAIL'] },
 ];
+
+// Στήλες αρχείων: «Όνομα αρχείου N» και «Link N»
+const FILE_NAME_RE = /^ΟΝΟΜΑ ΑΡΧΕΙΟΥ\s*(\d+)$/;
+const FILE_LINK_RE = /^LINK\s*(\d+)$/;
 
 const norm = (v) =>
   String(v ?? '')
@@ -27,8 +32,17 @@ const clean = (v) => String(v ?? '').replace(/\s+/g, ' ').trim();
 
 function resolveColumns(headerRow) {
   const headers = (headerRow || []).map(norm);
-  const cols = {};
   const used = new Set();
+
+  // Πρώτα οι στήλες αρχείων, ώστε να μην τις «πάρει» κάποιο άλλο πεδίο
+  const fileCols = {};
+  headers.forEach((h, i) => {
+    let m;
+    if ((m = h.match(FILE_NAME_RE))) { (fileCols[m[1]] ||= {}).name = i; used.add(i); }
+    else if ((m = h.match(FILE_LINK_RE))) { (fileCols[m[1]] ||= {}).link = i; used.add(i); }
+  });
+
+  const cols = {};
   for (const f of FIELDS) {
     let idx = -1;
     for (const h of f.headers.map(norm)) {
@@ -36,10 +50,18 @@ function resolveColumns(headerRow) {
       if (idx >= 0) break;
     }
     if (idx >= 0) used.add(idx);
-    else console.warn(`evretirio: δεν βρέθηκε στήλη για "${f.key}". Επικεφαλίδες:`, headers);
+    else if (!['id', 'email'].includes(f.key)) {
+      console.warn(`evretirio: δεν βρέθηκε στήλη για "${f.key}". Επικεφαλίδες:`, headers);
+    }
     cols[f.key] = idx; // -1 = κενό πεδίο, ποτέ λάθος στήλη
   }
-  return cols;
+
+  const files = Object.keys(fileCols)
+    .sort((a, b) => a - b)
+    .map((n) => ({ n, ...fileCols[n] }))
+    .filter((f) => f.link !== undefined);
+
+  return { cols, files };
 }
 
 function getAuth() {
@@ -90,15 +112,21 @@ export default async function handler(req, res) {
 
     const rows = valuesRes.data.values || [];
     const [headerRow, ...dataRows] = rows;
-    // const cols = resolveColumns(headerRow);
+    const { cols, files } = resolveColumns(headerRow);
+    const cell = (row, idx) => (idx >= 0 ? clean(row[idx]) : '');
 
     const actions = [];
     dataRows.forEach((row, i) => {
-      actions.push(row);
-      // const item = { id: i + 1 }; // id = αριθμός γραμμής κάτω από τις επικεφαλίδες
-      // for (const f of FIELDS) item[f.key] = cols[f.key] >= 0 ? clean(row[cols[f.key]]) : '';
-      // if (!item.subject) return; // κενές γραμμές ή γραμμές χωρίς θέμα
-      // actions.push(item);
+      const item = {};
+      for (const f of FIELDS) item[f.key] = cell(row, cols[f.key]);
+      if (!item.subject) return; // κενές γραμμές ή γραμμές χωρίς θέμα
+      if (!item.id) item.id = String(i + 1); // αν δεν υπάρχει στήλη Α/α
+
+      item.files = files
+        .map((f) => ({ name: cell(row, f.name ?? -1) || `Αρχείο ${f.n}`, url: cell(row, f.link) }))
+        .filter((f) => /^https?:\/\//i.test(f.url));
+
+      actions.push(item);
     });
 
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
