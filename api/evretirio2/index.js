@@ -94,7 +94,7 @@ export default async function handler(req, res) {
 
     const actions = [];
     dataRows.forEach((row, i) => {
-      actions.push(item);
+      actions.push(row);
       // const item = { id: i + 1 }; // id = αριθμός γραμμής κάτω από τις επικεφαλίδες
       // for (const f of FIELDS) item[f.key] = cols[f.key] >= 0 ? clean(row[cols[f.key]]) : '';
       // if (!item.subject) return; // κενές γραμμές ή γραμμές χωρίς θέμα
