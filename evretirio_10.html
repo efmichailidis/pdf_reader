@@ -243,7 +243,7 @@
    Η γραμμή επικεφαλίδων του φύλλου (ΘΕΜΑ / ΘΕΜΑΤΟΦΥΛΑΚΑΣ …) αγνοείται αυτόματα.
    Αν κάποια στιγμή προστεθεί πεδίο "email", εμφανίζεται κι αυτό στην κάρτα.
 ------------------------------------------------------------------- */
-const DATA_URL = '/api/evretirio2';
+const DATA_URL = '/api/evretirio';
 
 const POPULAR = [
   { label: 'Οι Εγκαταστάσεις μας', href: '#', icon: 'building' },
@@ -504,6 +504,17 @@ function readRow(a) {
     let m;
     if ((m = nk.match(/^link\s*(\d+)$/))) links[m[1]] = clean(v);
     else if ((m = nk.match(/^ονομα αρχειου\s*(\d+)$/))) names[m[1]] = clean(v);
+  }
+  // Νέα μορφή API: "files": [{ "name": "…", "url": "…" }]
+  if (Array.isArray(a.files)) {
+    out.files = a.files
+      .map((f, i) => ({ raw: clean(f && f.name) || `Αρχείο ${i + 1}`, url: clean(f && f.url) }))
+      .filter(f => /^https?:\/\//i.test(f.url))
+      .map(f => {
+        const m = f.raw.match(/^(.*\S)\.([a-z0-9]{2,5})$/i);
+        return { url: f.url, label: m ? m[1] : f.raw, ext: m ? m[2].toUpperCase() : '' };
+      });
+    return out;
   }
   out.files = Object.keys(links)
     .sort((x, y) => x - y)
