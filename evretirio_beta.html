@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ευρετήριο</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --band: #F2EEE8;
+    --ink: #2A231F;
+    --muted: #7A706A;
+    --line: #E4DED6;
+    --accent: #E0531C;
+    --accent-ink: #ffffff;
+    --soft: #F4F0EA;
+    --tag: #EEE9E2;
+    --solid: #2A231F;
+    --solid-ink: #ffffff;
+    --disabled: #C9C1B9;
+    color-scheme: light;
+  }
+
+  * { box-sizing: border-box; }
+  :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px; line-height: 1.45;
+  }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .band { background: var(--band); padding: 22px 16px; text-align: center; }
+  .band h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+
+  .wrap { max-width: 880px; margin: 0 auto; padding: 24px 20px 48px; }
+
+  .popular h2 { font-size: 17px; margin: 0 0 12px; }
+  .popular-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+  .pop {
+    display: inline-flex; align-items: center; gap: 10px; padding: 9px 12px;
+    border: 1px solid var(--line); border-radius: 8px; background: var(--bg);
+    text-decoration: none; color: var(--ink); font-weight: 600; font-size: 14px;
+  }
+  .pop:hover { border-color: var(--accent); }
+  .pop .ico {
+    width: 30px; height: 30px; border-radius: 6px; background: var(--soft);
+    display: grid; place-items: center; color: var(--accent);
+  }
+  .pop .chev { color: var(--accent); margin-left: auto; padding-left: 6px; }
+  .pop .ico { flex: none; }
+
+  .intro { margin: 30px 0 14px; }
+  .intro p { margin: 0; }
+  .intro small { color: var(--muted); font-size: 12px; }
+
+  .search {
+    display: flex; align-items: center; gap: 8px; border: 1px solid var(--line);
+    border-radius: 6px; padding: 0 12px; max-width: 420px; background: var(--bg);
+  }
+  .search:focus-within { border-color: var(--accent); }
+  .search input {
+    border: 0; outline: 0; background: transparent; color: var(--ink);
+    font: inherit; padding: 10px 0; width: 100%;
+  }
+  .search input::placeholder { color: var(--muted); }
+  .search .clear { border: 0; background: none; cursor: pointer; color: var(--muted); padding: 4px; display: none; }
+  .search.has-value .clear { display: block; }
+
+  .modes { display: flex; gap: 8px; margin: 20px 0 16px; }
+  .mode {
+    border: 1px solid var(--line); background: var(--bg); border-radius: 999px;
+    padding: 7px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .mode[aria-pressed="true"] { background: var(--solid); color: var(--solid-ink); border-color: var(--solid); }
+
+  .letters-wrap { position: relative; margin-bottom: 26px; }
+  .letters { display: flex; flex-wrap: wrap; gap: 6px; }
+  .lscroll { display: none; }
+  .letter {
+    min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid var(--line);
+    background: var(--bg); border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .letter:hover:not(:disabled) { border-color: var(--accent); }
+  .letter[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .letter:disabled { color: var(--disabled); cursor: default; }
+
+  .group + .group { margin-top: 32px; }
+  .group-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 2px solid var(--accent); padding-bottom: 8px; margin-bottom: 8px;
+  }
+  .group-head h3 { margin: 0; font-size: 18px; }
+  .group-head span { color: var(--muted); font-size: 12px; }
+
+  .list { border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .item + .item { border-top: 1px solid var(--line); }
+  .row {
+    width: 100%; display: flex; align-items: center; gap: 10px; text-align: left;
+    background: var(--bg); border: 0; padding: 13px 14px; cursor: pointer;
+  }
+  .row:hover { background: var(--soft); }
+  .row .t { flex: 1; font-weight: 600; font-size: 14px; }
+  .tag {
+    background: var(--tag); color: var(--muted); font-size: 11px; padding: 3px 8px;
+    border-radius: 4px; white-space: nowrap;
+  }
+  .row .caret { color: var(--accent); transition: transform .15s ease; flex: none; }
+  .row[aria-expanded="true"] .caret { transform: rotate(180deg); }
+
+  .panel { padding: 0 14px 14px; }
+  .card { background: var(--soft); border-radius: 6px; padding: 14px 16px; }
+  .card .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+  .card .role { font-size: 13px; margin-top: 2px; }
+  .card .name { font-weight: 700; font-size: 15px; margin: 2px 0 10px; }
+  .card a {
+    display: flex; align-items: center; gap: 8px; color: var(--accent);
+    text-decoration: none; font-size: 13px; font-weight: 600; width: fit-content;
+  }
+  .card a + a { margin-top: 6px; }
+  .card a:hover { text-decoration: underline; }
+  .card .none { color: var(--muted); font-size: 13px; }
+
+  .files { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .files .lbl { margin-bottom: 8px; }
+  .files ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .card a.file {
+    display: flex; align-items: center; gap: 10px; width: auto; margin: 0;
+    padding: 8px 10px; background: var(--bg); border: 1px solid var(--line); border-radius: 6px;
+    color: var(--ink); font-weight: 500; font-size: 13px; line-height: 1.35;
+  }
+  .card a.file:hover { border-color: var(--accent); text-decoration: none; }
+  .card a.file svg { flex: none; color: var(--accent); }
+  .file .fname { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .file .ext {
+    flex: none; font-size: 10px; font-weight: 700; letter-spacing: .04em; color: var(--muted);
+    background: var(--tag); padding: 2px 6px; border-radius: 4px;
+  }
+  .fcount { display: inline-flex; align-items: center; gap: 3px; color: var(--muted); font-size: 12px; flex: none; }
+
+  .empty { padding: 28px 16px; text-align: center; color: var(--muted); border: 1px dashed var(--line); border-radius: 6px; }
+  .notice { font-size: 12px; color: var(--muted); background: var(--soft); border-radius: 6px; padding: 8px 12px; margin-bottom: 16px; }
+
+  @media (max-width: 560px) {
+    .wrap { padding: 18px 14px 40px; }
+    .popular-row { grid-template-columns: 1fr; }
+    .row { flex-wrap: wrap; }
+    .row .t { flex-basis: calc(100% - 30px); }
+    .tag, .fcount { order: 3; }
+    .letters {
+      flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x proximity; scroll-padding-inline: 14px; scrollbar-width: none;
+      margin: 0 -14px; padding: 2px 14px 6px;
+    }
+    .letters::-webkit-scrollbar { display: none; }
+    .letter {
+      flex: none; scroll-snap-align: start;
+      min-width: 44px; height: 44px; padding: 0 10px; border-radius: 6px; font-size: 15px;
+    }
+    .lscroll {
+      position: absolute; top: 2px; width: 36px; height: 44px; padding: 0;
+      display: grid; place-items: center; border: 0; border-radius: 6px; cursor: pointer;
+      background: var(--accent); color: var(--accent-ink);
+      box-shadow: 0 1px 4px rgba(42, 35, 31, .25);
+      opacity: 0; pointer-events: none; transition: opacity .15s ease;
+    }
+    .lscroll.prev { left: -8px; }
+    .lscroll.next { right: -8px; }
+    .letters-wrap.can-l .lscroll.prev,
+    .letters-wrap.can-r .lscroll.next { opacity: 1; pointer-events: auto; }
+    /* Σβήσιμο στις άκρες: δείχνει ότι υπάρχουν κι άλλα γράμματα */
+    .letters.fade-r {
+      -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
+              mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
+    }
+    .letters.fade-l {
+      -webkit-mask-image: linear-gradient(to right, transparent, #000 48px);
+              mask-image: linear-gradient(to right, transparent, #000 48px);
+    }
+    .letters.fade-l.fade-r {
+      -webkit-mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
+              mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) { .row .caret, .lscroll { transition: none; } }
+</style>
+</head>
+<body>
+
+<header class="band"><h1>Ευρετήριο</h1></header>
+
+<main class="wrap">
+  <section class="popular" aria-labelledby="pop-h">
+    <h2 id="pop-h">Τα πιο δημοφιλή</h2>
+    <div class="popular-row" id="popular"></div>
+  </section>
+
+  <section class="intro">
+    <p>Βρείτε ποιος είναι Υπεύθυνος για κάθε Θέμα.</p>
+    <small id="totals">Φόρτωση…</small>
+  </section>
+
+  <div class="search" id="searchBox">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" type="search" placeholder="Αναζήτηση Θέματος" aria-label="Αναζήτηση Θέματος" autocomplete="off">
+    <button class="clear" id="clear" aria-label="Καθαρισμός αναζήτησης">✕</button>
+  </div>
+
+  <div class="modes" role="group" aria-label="Ταξινόμηση">
+    <button class="mode" data-mode="alpha" aria-pressed="true">Αλφαβητικά Α–Ω</button>
+    <button class="mode" data-mode="unit" aria-pressed="false">Ανά Ενότητα</button>
+  </div>
+
+  <div class="letters-wrap" id="lettersWrap">
+    <nav class="letters" id="letters" aria-label="Επιλογή γράμματος"></nav>
+    <button class="lscroll prev" id="lPrev" aria-label="Προηγούμενα γράμματα" tabindex="-1">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>
+    </button>
+    <button class="lscroll next" id="lNext" aria-label="Επόμενα γράμματα" tabindex="-1">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+    </button>
+  </div>
+
+  <div id="notice"></div>
+  <div id="results" aria-live="polite"></div>
+</main>
+
+<script>
+/* ------------------------------------------------------------------
+   Ρυθμίσεις
+   DATA_URL: το endpoint που επιστρέφει το JSON του ευρετηρίου:
+   {
+     "project": "Θεματολόγιον",
+     "totalActions": 360,
+     "updatedAt": "2026-11-12T11:11:23+00:00",
+     "actions": [
+       { "id": 1, "section": "Ανθρώπινου Δυναμικού", "subject": "Άδειες Εργαζομένου",
+         "owner": "Υπεύθυνος Γραφείου Αδειών & Απουσιών",
+         "name": "Κατερίνα Παναγιώτου", "phone": "214 100 9356" }
+     ]
+   }
+   Η γραμμή επικεφαλίδων του φύλλου (ΘΕΜΑ / ΘΕΜΑΤΟΦΥΛΑΚΑΣ …) αγνοείται αυτόματα.
+   Αν κάποια στιγμή προστεθεί πεδίο "email", εμφανίζεται κι αυτό στην κάρτα.
+------------------------------------------------------------------- */
+const DATA_URL = '/api/evretirio2';
+
+const POPULAR = [
+  { label: 'Οι Εγκαταστάσεις μας', href: '#', icon: 'building' },
+  { label: 'Κανονισμός Εργασίας', href: '#', icon: 'rules' },
+  { label: 'Οργανόγραμμα', href: '#', icon: 'org' },
+  { label: 'Κώδικας Δεοντολογίας', href: '#', icon: 'ethics' },
+  { label: 'Άδειες', href: '#', icon: 'calendar' },
+];
+
+/* ---------------- Βοηθητικά ---------------- */
+const GREEK = ['Α','Β','Γ','Δ','Ε','Ζ','Η','Θ','Ι','Κ','Λ','Μ','Ν','Ξ','Ο','Π','Ρ','Σ','Τ','Υ','Φ','Χ','Ψ','Ω'];
+const LATIN = 'A–Z';
+const LETTERS = [...GREEK, LATIN];
+
+const strip = s => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const norm = s => strip(s).toLowerCase().replace(/ς/g, 'σ');
+const collator = new Intl.Collator('el', { sensitivity: 'base', numeric: true });
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+function letterOf(title) {
+  const c = strip(title).trim().charAt(0).toUpperCase();
+  if (GREEK.includes(c)) return c;
+  return LATIN;
+}
+
+const ICONS = {
+  building: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16"/><path d="M15 10h4a1 1 0 0 1 1 1v10"/><path d="M3 21h18"/><path d="M8 8h3M8 12h3M8 16h3"/></svg>',
+  rules: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>',
+  org: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="5" rx="1"/><rect x="3" y="16" width="6" height="5" rx="1"/><rect x="15" y="16" width="6" height="5" rx="1"/><path d="M12 8v4M6 16v-2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/></svg>',
+  ethics: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 4.5 3 8.3 7 10 4-1.7 7-5.5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg>',
+  calendar: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/><path d="m9.5 15 2 2 3.5-3.5"/></svg>',
+  phone: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>',
+  mail: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
+  user: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
+  file: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5"/></svg>',
+  clip: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 11-8.5 8.5a5 5 0 0 1-7-7L14 4a3.3 3.3 0 0 1 4.7 4.7l-8.5 8.5a1.7 1.7 0 0 1-2.4-2.4L15.5 7"/></svg>',
+  caret: '<svg class="caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>'
+};
+
+/* ---------------- State ---------------- */
+const state = { topics: [], updatedAt: null, mode: 'alpha', letter: null, q: '', open: new Set() };
+const $ = id => document.getElementById(id);
+
+/* ---------------- Render ---------------- */
+function renderPopular() {
+  $('popular').innerHTML = POPULAR.map(p => `
+    <a class="pop" href="${esc(p.href)}">
+      <span class="ico">${ICONS[p.icon] || ''}</span>${esc(p.label)}
+      <span class="chev" aria-hidden="true">›</span>
+    </a>`).join('');
+}
+
+function renderTotals() {
+  const units = new Set(state.topics.map(t => t.unit).filter(Boolean));
+  const upd = formatUpdated(state.updatedAt);
+  $('totals').textContent = `${state.topics.length} Θέματα · ${units.size} Ενότητες` + (upd ? ` · Ενημέρωση ${upd}` : '');
+}
+
+function renderLetters() {
+  const box = $('letters');
+  const wrap = $('lettersWrap');
+  wrap.hidden = state.mode !== 'alpha' || !!state.q;
+  if (wrap.hidden) return;
+  const counts = {};
+  state.topics.forEach(t => { counts[t._letter] = (counts[t._letter] || 0) + 1; });
+  box.innerHTML = LETTERS.map(l => `
+    <button class="letter" data-letter="${l}" aria-pressed="${l === state.letter}"
+      ${counts[l] ? '' : 'disabled'} aria-label="${l === LATIN ? 'Λατινικοί χαρακτήρες' : 'Γράμμα ' + l}">${l}</button>`).join('');
+  const sel = box.querySelector('[aria-pressed="true"]');
+  if (sel && box.scrollWidth > box.clientWidth) {
+    const b = box.getBoundingClientRect(), r = sel.getBoundingClientRect();
+    const target = box.scrollLeft + (r.left - b.left) - (b.width - r.width) / 2;
+    box.scrollLeft = Math.max(0, Math.min(target, box.scrollWidth - box.clientWidth));
+  }
+  updateFade();
+}
+
+function updateFade() {
+  const box = $('letters');
+  const max = box.scrollWidth - box.clientWidth;
+  const EDGE = 16; // ανοχή για snap και padding στις άκρες
+  const l = max > EDGE && box.scrollLeft > EDGE;
+  const r = max > EDGE && box.scrollLeft < max - EDGE;
+  box.classList.toggle('fade-l', l);
+  box.classList.toggle('fade-r', r);
+  $('lettersWrap').classList.toggle('can-l', l);
+  $('lettersWrap').classList.toggle('can-r', r);
+}
+
+function itemHTML(t) {
+  const c = t.custodian || {};
+  const open = state.open.has(t.id);
+  const tel = (c.phone || '').replace(/[^\d+]/g, '');
+  const contact = [
+    c.email ? `<a href="mailto:${esc(c.email)}">${ICONS.mail}${esc(c.email)}</a>` : ''
+  ].join('');
+  return `
+    <div class="item">
+      <button class="row" data-id="${esc(t.id)}" aria-expanded="${open}" aria-controls="p-${esc(t.id)}">
+        <span class="t">${esc(t.title)}</span>
+        ${t.files.length ? `<span class="fcount" title="${t.files.length} ${t.files.length === 1 ? 'αρχείο' : 'αρχεία'}">${ICONS.clip}${t.files.length}</span>` : ''}
+        ${t.unit ? `<span class="tag">${esc(t.unit)}</span>` : ''}
+        ${ICONS.caret}
+      </button>
+      <div class="panel" id="p-${esc(t.id)}" ${open ? '' : 'hidden'}>
+        <div class="card">
+          ${c.name || c.role ? `
+            <div class="lbl">Θεματοφύλακας</div>
+            ${c.role ? `<div class="role">${esc(c.role)}</div>` : ''}
+            ${c.name ? `<div class="name">${esc(c.name)}</div>` : ''}
+            ${contact}` : '<div class="none">Δεν έχει οριστεί Θεματοφύλακας για αυτό το Θέμα.</div>'}
+          ${filesHTML(t.files)}
+        </div>
+      </div>
+    </div>`;
+}
+
+function filesHTML(files) {
+  if (!files.length) return '';
+  return `
+    <div class="files">
+      <div class="lbl">${files.length === 1 ? 'Αρχείο' : 'Αρχεία'}</div>
+      <ul>${files.map(f => `
+        <li><a class="file" href="${esc(f.url)}" target="_blank" rel="noopener noreferrer">
+          ${ICONS.file}<span class="fname">${esc(f.label)}</span>${f.ext ? `<span class="ext">${esc(f.ext)}</span>` : ''}
+        </a></li>`).join('')}
+      </ul>
+    </div>`;
+}
+
+function groupHTML(title, items) {
+  return `
+    <section class="group">
+      <div class="group-head"><h3>${esc(title)}</h3><span>${items.length} ${items.length === 1 ? 'Θέμα' : 'Θέματα'}</span></div>
+      ${items.length ? `<div class="list">${items.map(itemHTML).join('')}</div>` : ''}
+    </section>`;
+}
+
+function renderResults() {
+  const out = $('results');
+  const byTitle = (a, b) => collator.compare(a.title, b.title);
+
+  if (state.q) {
+    const q = norm(state.q);
+    const hits = state.topics.filter(t => t._search.includes(q)).sort(byTitle);
+    out.innerHTML = hits.length
+      ? groupHTML(`Αποτελέσματα για «${state.q}»`, hits)
+      : `<div class="empty">Κανένα Θέμα δεν ταιριάζει με «${esc(state.q)}». Δοκιμάστε λιγότερους χαρακτήρες ή το όνομα του υπευθύνου.</div>`;
+    return;
+  }
+
+  if (state.mode === 'unit') {
+    const groups = {};
+    state.topics.forEach(t => (groups[t.unit || 'Χωρίς Ενότητα'] ||= []).push(t));
+    out.innerHTML = Object.keys(groups).sort(collator.compare)
+      .map(u => groupHTML(u, groups[u].sort(byTitle))).join('');
+    return;
+  }
+
+  if (!state.letter) {
+    const groups = LETTERS
+      .map(l => [l, state.topics.filter(t => t._letter === l).sort(byTitle)])
+      .filter(([, items]) => items.length);
+    out.innerHTML = groups.length
+      ? groups.map(([l, items]) => groupHTML(l, items)).join('')
+      : '<div class="empty">Δεν υπάρχουν Θέματα.</div>';
+    return;
+  }
+
+  const items = state.topics.filter(t => t._letter === state.letter).sort(byTitle);
+  out.innerHTML = items.length
+    ? groupHTML(state.letter, items)
+    : `<div class="empty">Δεν υπάρχουν Θέματα με «${esc(state.letter)}».</div>`;
+}
+
+function render() { renderLetters(); renderResults(); }
+
+/* ---------------- Events ---------------- */
+$('results').addEventListener('click', e => {
+  const btn = e.target.closest('.row');
+  if (!btn) return;
+  const id = btn.dataset.id;
+  const open = btn.getAttribute('aria-expanded') !== 'true';
+  btn.setAttribute('aria-expanded', open);
+  document.getElementById('p-' + id).hidden = !open;
+  open ? state.open.add(id) : state.open.delete(id);
+});
+
+$('letters').addEventListener('scroll', updateFade, { passive: true });
+window.addEventListener('resize', updateFade);
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function scrollLetters(dir) {
+  const box = $('letters');
+  box.scrollBy({ left: dir * box.clientWidth * 0.7, behavior: reduceMotion ? 'auto' : 'smooth' });
+}
+$('lPrev').addEventListener('click', () => scrollLetters(-1));
+$('lNext').addEventListener('click', () => scrollLetters(1));
+
+$('letters').addEventListener('click', e => {
+  const b = e.target.closest('.letter');
+  if (!b || b.disabled) return;
+  // Δεύτερο πάτημα στο ίδιο γράμμα: επιστροφή σε όλα
+  state.letter = state.letter === b.dataset.letter ? null : b.dataset.letter;
+  render();
+});
+
+document.querySelectorAll('.mode').forEach(b => b.addEventListener('click', () => {
+  state.mode = b.dataset.mode;
+  document.querySelectorAll('.mode').forEach(x => x.setAttribute('aria-pressed', x === b));
+  render();
+}));
+
+let timer;
+$('q').addEventListener('input', e => {
+  clearTimeout(timer);
+  $('searchBox').classList.toggle('has-value', !!e.target.value);
+  timer = setTimeout(() => { state.q = e.target.value.trim(); render(); }, 120);
+});
+$('clear').addEventListener('click', () => {
+  $('q').value = ''; state.q = '';
+  $('searchBox').classList.remove('has-value');
+  $('q').focus(); render();
+});
+
+/* ---------------- Load ---------------- */
+const clean = v => String(v ?? '').replace(/\s+/g, ' ').trim();
+
+// Δέχεται και τη μορφή με αγγλικά πεδία (subject, section, …)
+// και τη μορφή με τις επικεφαλίδες του φύλλου (ΘΕΜΑ, ΕΝΟΤΗΤΑ ΘΕΜΑΤΩΝ, …).
+// [όνομα, exact]: exact = ακριβές ταίριασμα, αλλιώς αρκεί να ξεκινάει έτσι.
+const FIELD_KEYS = {
+  id:      [['id', true], ['Α/α', true], ['ΑΑ', true]],
+  subject: [['subject', true], ['ΘΕΜΑ', true]],
+  section: [['section', true], ['ΕΝΟΤΗΤΑ', false]],
+  owner:   [['owner', true], ['ΘΕΜΑΤΟΦΥΛΑΚΑΣ', true]],
+  name:    [['name', true], ['ΟΝΟΜΑΤΕΠΩΝΥΜΟ', false]],
+  phone:   [['phone', true], ['ΤΗΛΕΦΩΝΟ', false]],
+  email:   [['email', true], ['EMAIL', false], ['E-MAIL', false]]
+};
+
+function readRow(a) {
+  const entries = Object.entries(a).map(([k, v]) => [norm(k).replace(/\s+/g, ' ').trim(), v]);
+  const pick = (opts) => {
+    for (const [key, exact] of opts) {
+      const k = norm(key);
+      const hit = entries.find(([nk]) => (exact ? nk === k : nk.startsWith(k)));
+      if (hit) return clean(hit[1]);
+    }
+    return '';
+  };
+  const out = {};
+  for (const f in FIELD_KEYS) out[f] = pick(FIELD_KEYS[f]);
+
+  // Αρχεία: ζεύγη «Όνομα αρχείου N» / «Link N», όσα κι αν είναι
+  const names = {}, links = {};
+  for (const [nk, v] of entries) {
+    let m;
+    if ((m = nk.match(/^link\s*(\d+)$/))) links[m[1]] = clean(v);
+    else if ((m = nk.match(/^ονομα αρχειου\s*(\d+)$/))) names[m[1]] = clean(v);
+  }
+  // Νέα μορφή API: "files": [{ "name": "…", "url": "…" }]
+  if (Array.isArray(a.files)) {
+    out.files = a.files
+      .map((f, i) => ({ raw: clean(f && f.name) || `Αρχείο ${i + 1}`, url: clean(f && f.url) }))
+      .filter(f => /^https?:\/\//i.test(f.url))
+      .map(f => {
+        const m = f.raw.match(/^(.*\S)\.([a-z0-9]{2,5})$/i);
+        return { url: f.url, label: m ? m[1] : f.raw, ext: m ? m[2].toUpperCase() : '' };
+      });
+    return out;
+  }
+  out.files = Object.keys(links)
+    .sort((x, y) => x - y)
+    .filter(n => /^https?:\/\//i.test(links[n]))
+    .map(n => {
+      const raw = names[n] || `Αρχείο ${n}`;
+      const m = raw.match(/^(.*\S)\.([a-z0-9]{2,5})$/i);
+      return { url: links[n], label: m ? m[1] : raw, ext: m ? m[2].toUpperCase() : '' };
+    });
+  return out;
+}
+
+function prepare(data) {
+  const rows = Array.isArray(data) ? data : (data.actions || []);
+  state.updatedAt = data.updatedAt || null;
+  state.topics = rows
+    .filter(a => a && typeof a === 'object')
+    .map(readRow)
+    .filter(r => r.subject && !(norm(r.subject) === norm('ΘΕΜΑ') && norm(r.owner) === norm('ΘΕΜΑΤΟΦΥΛΑΚΑΣ')))
+    .map((r, i) => {
+      const t = {
+        id: r.id || 'r' + i,
+        title: r.subject,
+        unit: r.section,
+        files: r.files,
+        custodian: { role: r.owner, name: r.name, phone: r.phone, email: r.email }
+      };
+      t._letter = letterOf(t.title);
+      t._search = norm([t.title, t.unit, r.owner, r.name, ...r.files.map(f => f.label)].join(' '));
+      return t;
+    });
+}
+
+function formatUpdated(iso) {
+  const d = iso ? new Date(iso) : null;
+  if (!d || isNaN(d)) return '';
+  return d.toLocaleString('el-GR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+async function load() {
+  $('notice').innerHTML = '';
+  $('results').innerHTML = '<div class="empty">Φόρτωση Θεμάτων…</div>';
+  try {
+    const res = await fetch(DATA_URL, { credentials: 'include', headers: { Accept: 'application/json' }, cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    prepare(await res.json());
+  } catch (err) {
+    console.error('Ευρετήριο: αποτυχία φόρτωσης', err);
+    $('totals').textContent = '';
+    $('lettersWrap').hidden = true;
+    $('results').innerHTML = `
+      <div class="empty">
+        Δεν ήταν δυνατή η φόρτωση του Ευρετηρίου.<br>
+        <button class="mode" id="retry" style="margin-top:12px">Δοκιμή ξανά</button>
+      </div>`;
+    $('retry').addEventListener('click', load);
+    return;
+  }
+  renderTotals();
+  render();
+}
+
+renderPopular();
+load();
+</script>
+</body>
+</html>
