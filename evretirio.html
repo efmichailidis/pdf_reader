@@ -36,7 +36,13 @@
 
   .wrap { max-width: 880px; margin: 0 auto; padding: 24px 20px 48px; }
 
-  .popular h2 { font-size: 17px; margin: 0 0 12px; }
+  .section-head {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 4px 12px; flex-wrap: wrap;
+    border-bottom: 2px solid var(--accent); padding-bottom: 8px; margin-bottom: 16px;
+  }
+  .section-head h2 { margin: 0; font-size: 18px; font-weight: 700; }
+  .section-head span { color: var(--muted); font-size: 12px; }
+  .all { margin-top: 40px; }
   .popular-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
   .pop {
     display: inline-flex; align-items: center; gap: 10px; padding: 9px 12px;
@@ -51,9 +57,6 @@
   .pop .chev { color: var(--accent); margin-left: auto; padding-left: 6px; }
   .pop .ico { flex: none; }
 
-  .intro { margin: 30px 0 14px; }
-  .intro p { margin: 0; }
-  .intro small { color: var(--muted); font-size: 12px; }
 
   .search {
     display: flex; align-items: center; gap: 8px; border: 1px solid var(--line);
@@ -91,7 +94,7 @@
     display: flex; justify-content: space-between; align-items: baseline;
     border-bottom: 2px solid var(--accent); padding-bottom: 8px; margin-bottom: 8px;
   }
-  .group-head h3 { margin: 0; font-size: 18px; }
+  .group-head h3 { margin: 0; font-size: 18px; color: var(--accent); }
   .group-head span { color: var(--muted); font-size: 12px; }
 
   .list { border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
@@ -175,18 +178,23 @@
 
 <main class="wrap">
   <section class="popular" aria-labelledby="pop-h">
-    <h2 id="pop-h">Τα πιο δημοφιλή</h2>
+    <div class="section-head">
+      <h2 id="pop-h">Δημοφιλή Θέματα</h2>
+      <span>Με βάση τις προβολές των τελευταίων 30 ημερών</span>
+    </div>
     <div class="popular-row" id="popular"></div>
   </section>
 
-  <section class="intro">
-    <p>Βρείτε ποιος είναι Υπεύθυνος για κάθε Θέμα.</p>
-    <small id="totals">Φόρτωση…</small>
+  <section class="all" aria-labelledby="all-h">
+    <div class="section-head">
+      <h2 id="all-h">Όλα τα Θέματα</h2>
+      <span id="totals">Φόρτωση…</span>
+    </div>
   </section>
 
   <div class="search" id="searchBox">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-    <input id="q" type="search" placeholder="Αναζήτηση Θέματος" aria-label="Αναζήτηση Θέματος" autocomplete="off">
+    <input id="q" type="search" placeholder="Αναζήτηση Θέματος ή Θεματοφύλακα" aria-label="Αναζήτηση Θέματος ή Θεματοφύλακα" autocomplete="off">
     <button class="clear" id="clear" aria-label="Καθαρισμός αναζήτησης">✕</button>
   </div>
 
@@ -278,9 +286,8 @@ function renderPopular() {
 }
 
 function renderTotals() {
-  const units = new Set(state.topics.map(t => t.unit).filter(Boolean));
-  const upd = formatUpdated(state.updatedAt);
-  $('totals').textContent = `${state.topics.length} Θέματα · ${units.size} Ενότητες` + (upd ? ` · Ενημέρωση ${upd}` : '');
+  const n = state.topics.length;
+  $('totals').textContent = `${n} ${n === 1 ? 'Θέμα' : 'Θέματα'} συνολικά`;
 }
 
 function renderLetters() {
