@@ -182,7 +182,22 @@ function buildActions(dataRows, cols) {
   return actions;
 }
 
+function isAllowed(req) {
+  const site = req.headers['sec-fetch-site'];
+  if (site) return site === 'same-origin';
+
+  // Παλιότεροι browsers: έλεγχος Origin/Referer απέναντι στο host του ίδιου deployment
+  const src = req.headers.origin || req.headers.referer;
+  if (!src) return false;
+  try { return new URL(src).host === req.headers.host; } catch { return false; }
+}
+
 export default async function handler(req, res) {
+  if (!isAllowed(req)) {
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
     return res.status(405).json({ error: 'Method not allowed' });
