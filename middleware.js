@@ -1,5 +1,5 @@
 export const config = {
-  matcher: ['/index.html', '/viewer.html', '/admin.html', '/api/manage-pdf', '/evretirio.html', '/evretirio_beta.html', '/chart.html'],
+  matcher: ['/index.html', '/viewer.html', '/admin.html', '/api/manage-pdf' '/evretirio_beta.html', '/chart.html'],
 };
 
 export default function middleware(request) {
@@ -9,7 +9,7 @@ export default function middleware(request) {
   const ALLOWED_DOMAIN = 'https://app.sklavenitismentor.gr';
 
   // --- ΕΛΕΓΧΟΣ 1: Πρόσβαση στο Viewer (Iframe Ή Κλικ από Admin) ---
-  if (pathname === '/index.html' || pathname === '/viewer.html' || pathname === '/evretirio.html' || pathname === '/evretirio_beta.html' || pathname === '/chart.html') {
+  if (pathname === '/index.html' || pathname === '/viewer.html' || pathname === '/evretirio_beta.html' || pathname === '/chart.html') {
     const fetchDest = request.headers.get('sec-fetch-dest');
     const referer = request.headers.get('referer') || '';
 
