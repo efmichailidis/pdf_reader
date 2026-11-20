@@ -1,5 +1,5 @@
 export const config = {
-  matcher: ['/index.html', '/viewer.html', '/admin.html', '/api/manage-pdf', '/evretirio.html', '/evretirio_beta.html'],
+  matcher: ['/index.html', '/viewer.html', '/admin.html', '/api/manage-pdf', '/evretirio.html', '/evretirio_beta.html', '/chart.html'],
 };
 
 export default function middleware(request) {
