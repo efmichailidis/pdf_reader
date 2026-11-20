@@ -422,7 +422,7 @@
       if (node && node.pdf_url) {
         label = document.createElement('a');
         label.href = node.pdf_url;
-        label.target = '_blank';
+        label.target = '_top';
         label.rel = 'noopener noreferrer';
         label.title = 'Άνοιγμα PDF';
         label.className = 'card-link' + (cls ? ' ' + cls : '');
