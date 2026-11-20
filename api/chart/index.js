@@ -24,7 +24,9 @@ const FIELDS = [
   { key: 'email',       headers: ['EMAIL', 'E-MAIL', 'E_MAIL'] },
   { key: 'phone',       headers: ['PHONE', 'ΤΗΛΕΦΩΝΟ', 'ΤΗΛ'] },
   { key: 'description', headers: ['DESCRIPTION', 'ΠΕΡΙΓΡΑΦΗ'] },
-  { key: 'photo_url',   headers: ['PHOTO_URL', 'PHOTO', 'ΦΩΤΟΓΡΑΦΙΑ'] },
+  // { key: 'photo_url',   headers: ['PHOTO_URL', 'PHOTO', 'ΦΩΤΟΓΡΑΦΙΑ'] },
+  { key: 'pdf_url',     headers: ['PDF_URL', 'PDF', 'LINK', 'URL', 'ΣΥΝΔΕΣΜΟΣ', 'ΑΡΧΕΙΟ'] },
+
 ];
 
 const ROW_TYPES = {
