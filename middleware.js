@@ -2,6 +2,21 @@ export const config = {
   matcher: ['/index.html', '/viewer.html', '/admin.html', '/api/manage-pdf', '/evretirio_beta.html', '/chart.html'],
 };
 
+// Σύγκριση σταθερού χρόνου (στο Edge δεν υπάρχει node:crypto)
+function safeEqual(a, b) {
+  const x = String(a ?? ''), y = String(b ?? '');
+  let diff = x.length ^ y.length;
+  const len = Math.max(x.length, y.length);
+  for (let i = 0; i < len; i++) diff |= (x.charCodeAt(i) || 0) ^ (y.charCodeAt(i) || 0);
+  return diff === 0;
+}
+
+function hasValidKey(url) {
+  const expected = process.env.ORGCHART_KEY;
+  if (!expected) return false; // χωρίς ρύθμιση, κλειστό
+  return safeEqual(url.searchParams.get('key'), expected);
+}
+
 export default function middleware(request) {
   const url = new URL(request.url);
   const pathname = url.pathname;
@@ -9,7 +24,7 @@ export default function middleware(request) {
   const ALLOWED_DOMAIN = 'https://app.sklavenitismentor.gr';
 
   // --- ΕΛΕΓΧΟΣ 1: Πρόσβαση στο Viewer (Iframe Ή Κλικ από Admin) ---
-  if (pathname === '/index.html' || pathname === '/viewer.html' || pathname === '/evretirio_beta.html' || pathname === '/chart.html') {
+  if (pathname === '/index.html' || pathname === '/viewer.html' || pathname === '/evretirio_beta.html' || pathname === '/chart.html' || hasValidKey(url)) {
     const fetchDest = request.headers.get('sec-fetch-dest');
     const referer = request.headers.get('referer') || '';
 
