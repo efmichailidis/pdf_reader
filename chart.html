@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Οργανόγραμμα Επιχείρησης</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background-color: #ffffff;
+      color: #1f2937;
+      overflow-x: hidden;
+    }
+
+    /* Main Org Chart Custom Shapes matching Image 1 */
+    .node-card {
+      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), filter 0.18s ease, box-shadow 0.18s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .node-card:hover {
+      transform: translateY(-2px) scale(1.015);
+      filter: brightness(1.07);
+      z-index: 20;
+    }
+
+    .node-card:active {
+      transform: translateY(0) scale(0.99);
+    }
+
+    /* Left-pointing chevron banner (Left column crimson red items) */
+    .chevron-left {
+      clip-path: polygon(16px 0%, 100% 0%, 100% 100%, 16px 100%, 0% 50%);
+      padding-left: 22px;
+      padding-right: 12px;
+    }
+
+    /* Right-pointing chevron banner (Right column crimson/rust items) */
+    .chevron-right {
+      clip-path: polygon(0% 0%, calc(100% - 16px) 0%, 100% 50%, calc(100% - 16px) 100%, 0% 100%);
+      padding-left: 12px;
+      padding-right: 22px;
+    }
+
+    /* Bottom downward-pointing ribbon/pentagon cards (9 General Directorates) */
+    .ribbon-down {
+      clip-path: polygon(0% 0%, 100% 0%, 100% calc(100% - 20px), 50% 100%, 0% calc(100% - 20px));
+      padding-bottom: 24px;
+    }
+
+    /* Drill-Down View Styles matching Image 2 */
+    .drill-card {
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 1px 2px rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 5;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+    }
+
+    .drill-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+      filter: brightness(1.04);
+    }
+
+    /* Dedicated + / - Expand/Collapse Pill Button on Red Directorates & Nested Parent Units */
+    .expand-toggle-btn {
+      position: absolute;
+      bottom: -9px;
+      left: 31px;
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background-color: #ffffff;
+      color: #cc1c2f;
+      border: 1.5px solid #cc1c2f;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.22);
+      z-index: 20;
+      cursor: pointer;
+      transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .expand-toggle-btn:hover {
+      transform: scale(1.15);
+      background-color: #cc1c2f;
+      color: #ffffff;
+    }
+
+    .expand-toggle-sub-btn {
+      position: absolute;
+      bottom: -8px;
+      left: 22px;
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      background-color: #e68a2e;
+      color: #ffffff;
+      border: 1.5px solid #ffffff;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+      z-index: 20;
+      cursor: pointer;
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+
+    .expand-toggle-sub-btn:hover {
+      transform: scale(1.15);
+      background-color: #c97118;
+    }
+
+    .nested-units[hidden] {
+      display: none;
+    }
+
+    /* Active highlighted General Directorate halo matching Image 2 */
+    .active-gd-halo {
+      background-color: #fbf4c4;
+      padding: 6px;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(176, 91, 9, 0.15);
+      flex-shrink: 0;
+    }
+
+    /* Info badge (i) top-right */
+    .info-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 17px;
+      height: 17px;
+      border-radius: 9999px;
+      background-color: #ffffff;
+      color: #4b5563;
+      border: 1px solid #d1d5db;
+      font-size: 10px;
+      font-weight: 800;
+      font-style: italic;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.22);
+      z-index: 15;
+      transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .info-badge:hover {
+      transform: scale(1.2);
+      background-color: #5e1416;
+      color: #ffffff;
+      border-color: #5e1416;
+    }
+
+    /* Custom subtle scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f3f4f6;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Panning cursor */
+    .grab-area {
+      cursor: grab;
+    }
+    .grab-area:active {
+      cursor: grabbing;
+    }
+
+    @keyframes fadeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-view {
+      animation: fadeSlideIn 0.25s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="bg-white min-h-screen flex flex-col">
+
+  <!-- Minimal Floating Top Bar (Non-intrusive, toggleable or compact) -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-gray-200 px-3 sm:px-6 h-[53px] flex items-center justify-between gap-2 shadow-xs">
+    <div class="flex items-center gap-3 shrink-0">
+      <button id="btn-home" onclick="showMainChart()" class="flex items-center gap-2 text-left group">
+        <div class="w-8 h-8 rounded bg-[#5e1416] flex items-center justify-center text-white font-bold shadow-xs group-hover:bg-[#7a1b1e] transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+            <rect x="9" y="2" width="6" height="5" rx="1"></rect>
+            <rect x="2" y="17" width="6" height="5" rx="1"></rect>
+            <rect x="9" y="17" width="6" height="5" rx="1"></rect>
+            <rect x="16" y="17" width="6" height="5" rx="1"></rect>
+            <path d="M12 7v5M5 12h14M5 12v5M12 12v5M19 12v5"></path>
+          </svg>
+        </div>
+        <div class="hidden sm:block">
+          <h1 class="text-sm sm:text-base font-bold text-gray-900 leading-tight">Οργανόγραμμα Επιχείρησης</h1>
+          <p id="breadcrumb-subtitle" class="text-[11px] text-gray-500">Κεντρική Δομή Διοίκησης & Γενικών Διευθύνσεων</p>
+        </div>
+      </button>
+    </div>
+
+    <!-- Search & Quick Navigation -->
+    <div class="flex items-center gap-2 flex-1 sm:flex-initial justify-end max-w-2xl w-full sm:w-auto">
+      <div class="relative flex-1 sm:w-64">
+        <input
+          id="org-search"
+          type="text"
+          placeholder="Αναζήτηση μονάδας ή εργαζομένου..."
+          class="w-full pl-8 pr-3 py-1.5 text-xs sm:text-sm bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:bg-white focus:border-[#5e1416] transition"
+          oninput="handleSearch(this.value)"
+        />
+        <svg class="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="M21 21l-4.35-4.35"></path>
+        </svg>
+        <!-- Search Results Dropdown -->
+        <div id="search-results" class="hidden fixed sm:absolute left-2 right-2 sm:left-0 sm:right-0 top-[56px] sm:top-auto mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-80 overflow-y-auto z-50 divide-y divide-gray-100"></div>
+      </div>
+
+      <button
+        onclick="loadChart()"
+        class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-emerald-700 text-white rounded-lg hover:bg-emerald-800 transition shadow-xs whitespace-nowrap"
+        title="Ανανέωση δεδομένων από το API"
+      >
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v6h6M20 20v-6h-6M5.6 15A8 8 0 0018.4 9M18.4 9L20 10M5.6 15L4 14"></path>
+        </svg>
+        <span class="hidden md:inline">Ανανέωση</span>
+      </button>
+
+      <button
+        id="btn-back-main"
+        onclick="showMainChart()"
+        class="hidden items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#5e1416] text-white rounded-lg hover:bg-[#7a1b1e] transition shadow-xs whitespace-nowrap"
+      >
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        <span class="hidden sm:inline">Κεντρικό Οργανόγραμμα</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="flex-1 relative overflow-hidden flex flex-col">
+
+    <!-- ==================== VIEW 1: MAIN ORG CHART (IMAGE 1) ==================== -->
+    <div id="main-chart-view" class="w-full overflow-x-auto overflow-y-auto py-6 sm:py-8 px-4 flex justify-center animate-view">
+      <div id="main-chart-mobile" class="min-[960px]:hidden w-full max-w-3xl mx-auto select-none"></div>
+      <div id="main-chart-canvas" class="hidden min-[960px]:flex min-w-[920px] max-w-[1040px] w-full flex-col items-center select-none">
+
+        <!-- TOP NODES (δυναμικά από το API) -->
+        <div id="top-nodes" class="w-full flex flex-col items-center"></div>
+
+        <!-- CENTRAL SPINE + 7 HORIZONTAL BRANCH ROWS -->
+        <div class="relative w-full flex flex-col items-center">
+          <!-- Continuous vertical spine from Διοικητικό Συμβούλιο down to bottom distribution bar -->
+          <div class="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[1.5px] bg-[#7a7a7a] pointer-events-none"></div>
+
+          <div id="central-branches-container" class="w-full flex flex-col gap-[13px] pt-[16px] pb-[22px] relative z-10">
+            <!-- Populated dynamically by renderMainChart() -->
+          </div>
+        </div>
+
+        <!-- BOTTOM DISTRIBUTION HORIZONTAL BAR & 9 GENERAL DIRECTORATES -->
+        <div class="w-full flex flex-col items-center">
+          <div id="bottom-bus" class="w-full grid gap-[8px]"></div>
+
+          <!-- Downward Ribbon Cards -->
+          <div id="bottom-gd-container" class="w-full grid gap-[8px]">
+            <!-- Populated dynamically by renderMainChart() -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================== VIEW 2: DRILL-DOWN HIERARCHY VIEW (IMAGE 2) ==================== -->
+    <div id="drilldown-view" class="hidden flex-1 relative bg-white overflow-hidden select-none">
+
+      <!-- Left Zoom Controls matching Image 2 (+ / - magnifying glasses) -->
+      <div class="fixed left-3 bottom-3 sm:bottom-auto sm:top-[66px] z-30 flex flex-row sm:flex-col gap-2">
+        <button
+          onclick="adjustZoom(0.12)"
+          title="Μεγέθυνση (+)"
+          class="w-9 h-9 rounded-md bg-[#eeeeee] hover:bg-[#e2e2e2] text-gray-700 shadow border border-gray-200 flex items-center justify-center transition active:scale-95"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path stroke-linecap="round" d="M20 20l-3.5-3.5M11 8v6M8 11h6"></path>
+          </svg>
+        </button>
+        <button
+          onclick="adjustZoom(-0.12)"
+          title="Σμίκρυνση (-)"
+          class="w-9 h-9 rounded-md bg-[#eeeeee] hover:bg-[#e2e2e2] text-gray-700 shadow border border-gray-200 flex items-center justify-center transition active:scale-95"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path stroke-linecap="round" d="M20 20l-3.5-3.5M8 11h6"></path>
+          </svg>
+        </button>
+        <button
+          onclick="resetZoomPan()"
+          title="Επαναφορά Προβολής (100%)"
+          class="w-9 h-9 rounded-md bg-[#eeeeee] hover:bg-[#e2e2e2] text-gray-700 shadow border border-gray-200 flex items-center justify-center text-[11px] font-bold transition active:scale-95"
+        >
+          100%
+        </button>
+      </div>
+
+      <!-- Right-edge Cyan/Blue Toggle Tab matching Image 2 -->
+      <button
+        id="drawer-edge-tab"
+        onclick="toggleSideDrawer()"
+        title="Πληροφορίες & Προσωπικό Μονάδας"
+        class="fixed right-0 top-[53px] z-30 w-7 h-7 bg-[#63c5ea] hover:bg-[#49b6e0] text-white flex items-center justify-center shadow transition cursor-pointer"
+      >
+        <svg id="drawer-tab-icon" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+
+      <!-- Scrollable / Pannable Tree Canvas -->
+      <div id="drill-viewport" class="w-full h-[calc(100dvh-53px)] overflow-auto grab-area flex items-start pt-5 pb-20 px-4 sm:px-12">
+        <div id="drill-zoom-container" class="origin-top transition-transform duration-150 ease-out flex flex-col items-center min-w-max mx-auto">
+          <!-- Populated dynamically by renderDrillTree() -->
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ==================== SLIDE-OVER INFO & PERSONNEL DRAWER ==================== -->
+  <aside
+    id="info-drawer"
+    class="fixed top-[53px] right-0 bottom-0 w-[90vw] max-w-[400px] bg-white border-l border-gray-200 shadow-2xl z-40 transform translate-x-full transition-transform duration-250 ease-out flex flex-col"
+  >
+    <div class="p-4 bg-[#5e1416] text-white flex items-start justify-between gap-2 shrink-0">
+      <div>
+        <span id="drawer-badge" class="inline-block px-2 py-0.5 text-[10px] uppercase tracking-wider font-semibold bg-white/20 rounded mb-1">
+          Οργανωτική Μονάδα
+        </span>
+        <h2 id="drawer-title" class="text-base font-bold leading-snug">Τίτλος Μονάδας</h2>
+      </div>
+      <button onclick="closeSideDrawer()" class="p-1 rounded hover:bg-white/20 text-white transition" title="Κλείσιμο">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="p-5 flex-1 overflow-y-auto space-y-5 text-sm">
+      <!-- Head of Unit -->
+      <div class="bg-amber-50/70 p-3.5 rounded-lg border border-amber-200/80 flex items-center gap-3">
+        <div class="w-11 h-11 rounded-full bg-[#b05b09] text-white font-bold flex items-center justify-center shrink-0 text-sm shadow-xs" id="drawer-avatar">
+          ΔΝ
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="text-[10px] uppercase tracking-wider text-[#b05b09] font-bold">Επικεφαλής Μονάδας</div>
+          <div id="drawer-head" class="font-bold text-gray-900 truncate">Ονοματεπώνυμο</div>
+          <div id="drawer-role" class="text-xs text-gray-600 truncate">Διευθυντής / Προϊστάμενος</div>
+        </div>
+      </div>
+
+      <!-- Key Metrics -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="p-3 rounded-lg border border-gray-200 bg-white">
+          <div class="text-[11px] text-gray-500">Στελέχωση Μονάδας</div>
+          <div id="drawer-staff" class="text-base font-bold text-gray-900 mt-0.5">0 άτομα</div>
+        </div>
+        <div class="p-3 rounded-lg border border-gray-200 bg-white">
+          <div class="text-[11px] text-gray-500">Τηλέφωνο / Εσωτ.</div>
+          <div id="drawer-ext" class="text-sm font-bold text-[#5e1416] mt-0.5 truncate">210-3400</div>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Επικοινωνία Μονάδας</h3>
+        <p id="drawer-email" class="text-xs font-medium text-blue-700 bg-blue-50 px-3 py-2 rounded border border-blue-100">
+          info@company.gr
+        </p>
+      </div>
+
+      <!-- Personnel List (PERSON rows from Google Sheet V2) -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Προσωπικό Μονάδας</h3>
+          <span id="drawer-people-count" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">0</span>
+        </div>
+        <div id="drawer-personnel-list" class="space-y-2">
+          <!-- Populated dynamically with staff members -->
+        </div>
+      </div>
+
+      <!-- Responsibilities -->
+      <div>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Περιγραφή & Αρμοδιότητες</h3>
+        <ul id="drawer-responsibilities" class="space-y-1.5 text-xs text-gray-700 leading-relaxed list-disc pl-4">
+        </ul>
+      </div>
+
+      <!-- Action button if this node has its own sub-chart -->
+      <div id="drawer-drill-action" class="pt-2 hidden">
+        <button
+          id="drawer-open-subchart-btn"
+          class="w-full py-2.5 px-4 bg-[#b05b09] hover:bg-[#964d07] text-white font-semibold text-xs rounded-lg shadow transition flex items-center justify-center gap-2"
+        >
+          <span>Άνοιγμα Αναλυτικού Οργανογράμματος Μονάδας</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- LOAD STATUS -->
+  <div id="load-status" class="hidden fixed inset-x-0 top-[70px] z-50 flex justify-center px-4 pointer-events-none">
+    <div id="load-status-box" class="pointer-events-auto"></div>
+  </div>
+
+  <script>
+    /**
+     * ============================================================================
+     * DATA LAYER — όλα τα δεδομένα έρχονται από το API (JSON με UNIT / PERSON rows)
+     * Το endpoint ορίζεται από: ?api=... στο URL, ή window.ORG_CHART_API_URL, ή '/api/chart'
+     * ============================================================================
+     */
+    const API_URL = new URLSearchParams(location.search).get('api') || window.ORG_CHART_API_URL || '/api/v1/chartdata';
+
+    let UNITS = {};          // id -> UNIT row
+    let CHILDREN = {};       // parent_id -> [UNIT rows] (ταξινομημένα με order_index)
+    let PERSONNEL_LIST = []; // PERSON rows
+    let HUB_ID = null;       // ο κόμβος από τον οποίο ξεκινούν οι διευθύνσεις (π.χ. Διοικητικό Συμβούλιο)
+    let TOP_NODES = [];      // αλυσίδα "top" κόμβων (Γ.Σ. Μετόχων -> Δ.Σ.)
+    let CENTRAL_ROWS = [];
+    let BOTTOM_GENERAL_DIRECTORATES = [];
+
+    const STYLE_BY_THEME = {
+      maroon: 'maroon',
+      brown: 'orange',
+      red: 'red',
+      orange_red: 'rust',
+      grey: 'med-grey',
+      lightgrey: 'light-grey'
+    };
+
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function toBool(v) {
+      return ['ναι', 'yes', 'true', '1'].includes(String(v ?? '').trim().toLowerCase());
+    }
+
+    function orderOf(u) {
+      const n = parseInt(u.order_index, 10);
+      return isNaN(n) ? 9999 : n;
+    }
+
+    function indexData(payload) {
+      const rows = Array.isArray(payload) ? payload : (payload.actions || payload.data || payload.rows || []);
+      if (!Array.isArray(rows) || rows.length === 0) throw new Error('Το API δεν επέστρεψε εγγραφές.');
+
+      UNITS = {};
+      CHILDREN = {};
+      const units = rows.filter((r) => String(r.row_type || '').toUpperCase() === 'UNIT');
+      if (units.length === 0) throw new Error('Δεν βρέθηκαν εγγραφές τύπου UNIT.');
+
+      units.forEach((u) => { UNITS[u.id] = u; });
+      units.forEach((u) => {
+        const p = u.parent_id || '';
+        (CHILDREN[p] = CHILDREN[p] || []).push(u);
+      });
+      Object.values(CHILDREN).forEach((arr) => arr.sort((a, b) => orderOf(a) - orderOf(b)));
+
+      PERSONNEL_LIST = rows
+        .filter((r) => String(r.row_type || '').toUpperCase() === 'PERSON')
+        .map((p, i) => ({
+          person_id: p.id || `emp_${i}`,
+          unit_id: p.unit_id || p.parent_id || '',
+          full_name: p.full_name || p.title || '',
+          job_title: p.job_title || 'Στέλεχος',
+          is_head: toBool(p.is_head),
+          email: p.email || '',
+          phone: p.phone || '',
+          photo_url: p.photo_url || null
+        }));
+
+      // Αλυσίδα top κόμβων
+      TOP_NODES = [];
+      let cur = units.find((u) => !u.parent_id || !UNITS[u.parent_id]);
+      while (cur && cur.node_type === 'top') {
+        TOP_NODES.push(cur);
+        cur = (CHILDREN[cur.id] || []).find((c) => c.node_type === 'top');
+      }
+      const hub = TOP_NODES[TOP_NODES.length - 1] || units.find((u) => !u.parent_id || !UNITS[u.parent_id]);
+      HUB_ID = hub.id;
+      const hubKids = CHILDREN[HUB_ID] || [];
+
+      // Κεντρικές γραμμές (staff αριστερά / δεξιά)
+      const staff = hubKids.filter((u) => u.node_type === 'staff');
+      const left = staff.filter((u) => u.side === 'left');
+      const right = staff.filter((u) => u.side !== 'left');
+      const subStaffOf = (u) => (CHILDREN[u.id] || []).find((c) => c.node_type === 'sub_staff') || null;
+
+      CENTRAL_ROWS = [];
+      const n = Math.max(left.length, right.length);
+      for (let i = 0; i < n; i++) {
+        CENTRAL_ROWS.push({
+          left: left[i] ? { ...mainNode(left[i]), farLeft: subStaffOf(left[i]) ? mainNode(subStaffOf(left[i])) : null } : null,
+          right: right[i] ? mainNode(right[i]) : null
+        });
+      }
+
+      BOTTOM_GENERAL_DIRECTORATES = hubKids
+        .filter((u) => u.node_type === 'general_directorate')
+        .map((u) => mainNode(u));
+    }
+
+    function getUnitPersonnelEarly(unitId) {
+      return PERSONNEL_LIST.filter((p) => p.unit_id === unitId);
+    }
+
+    function makeMeta(u) {
+      const ppl = getUnitPersonnelEarly(u.id);
+      const head = ppl.find((p) => p.is_head) || ppl[0];
+      return {
+        head: head ? head.full_name : '—',
+        role: head ? head.job_title : '',
+        staff: ppl.length ? `${ppl.length} άτομα` : '—',
+        ext: u.phone || '',
+        email: u.email || '',
+        responsibilities: u.description ? [u.description] : []
+      };
+    }
+
+    function typeOf(u) {
+      switch (u.color_theme) {
+        case 'red': return 'red-chevron';
+        case 'orange_red': return 'rust-chevron';
+        case 'lightgrey': return 'light-grey-rect';
+        default: return 'grey-rect';
+      }
+    }
+
+    function mainNode(u) {
+      return { id: u.id, title: u.title, type: typeOf(u), meta: makeMeta(u) };
+    }
+
+    function isDrillable(id) {
+      const u = UNITS[id];
+      if (!u || u.node_type === 'top') return false;
+      return (CHILDREN[id] || []).some((c) => c.node_type !== 'sub_staff');
+    }
+
+    function findMainNodeById(id) {
+      const u = UNITS[id];
+      return u && u.parent_id === HUB_ID && isDrillable(id) ? mainNode(u) : null;
+    }
+
+    // Ο πιο κοντινός πρόγονος που βρίσκεται απευθείας κάτω από το hub (δηλ. φαίνεται στο κεντρικό οργανόγραμμα)
+    function mainAncestorId(id) {
+      let u = UNITS[id];
+      while (u && UNITS[u.parent_id] && u.parent_id !== HUB_ID) u = UNITS[u.parent_id];
+      return u && u.parent_id === HUB_ID ? u.id : null;
+    }
+
+    // Δέντρο drill-down: level 0 = στήλη, 1 = τμήμα, 2 = γραφείο, 3 = ομάδα
+    function treeNode(u, level) {
+      const kids = CHILDREN[u.id] || [];
+      const node = {
+        id: u.id,
+        title: u.title,
+        style: STYLE_BY_THEME[u.color_theme] || 'med-grey',
+        meta: makeMeta(u)
+      };
+      if (level === 0) {
+        node.hasSymbol = kids.length > 0;
+        node.children = kids.map((k) => treeNode(k, 1));
+      } else if (level < 3) {
+        node.subChildren = kids.map((k) => treeNode(k, level + 1));
+      }
+      return node;
+    }
+
+    function buildDynamicOrgTree(nodeId) {
+      const u = UNITS[nodeId];
+      if (!u) return null;
+      const kids = (CHILDREN[u.id] || []).filter((c) => c.node_type !== 'sub_staff');
+      return {
+        id: u.id,
+        parentLabel: 'Διοίκηση',
+        title: u.title,
+        hasSymbol: kids.length > 0,
+        colorType: STYLE_BY_THEME[u.color_theme] || 'orange',
+        meta: makeMeta(u),
+        columns: kids.map((k) => treeNode(k, 0))
+      };
+    }
+
+    /**
+     * ============================================================================
+     * RENDER MAIN ORG CHART
+     * ============================================================================
+     */
+    function renderMainChart() {
+      // Top κόμβοι (Γενική Συνέλευση -> Διοικητικό Συμβούλιο)
+      const topEl = document.getElementById('top-nodes');
+      topEl.innerHTML = '';
+      TOP_NODES.forEach((u, i) => {
+        if (i > 0) {
+          const line = document.createElement('div');
+          line.className = 'w-[1.5px] h-[14px] bg-[#7a7a7a]';
+          topEl.appendChild(line);
+        }
+        const card = document.createElement('div');
+        card.onclick = () => openNodeInfoDrawer(mainNode(u));
+        card.className = 'node-card w-[260px] h-[52px] bg-[#5e1416] text-white font-bold text-[13px] flex items-center justify-center text-center px-3 shadow-xs';
+        card.textContent = u.title;
+        topEl.appendChild(card);
+      });
+
+      const branchesContainer = document.getElementById('central-branches-container');
+      branchesContainer.innerHTML = '';
+
+      CENTRAL_ROWS.forEach((row) => {
+        const rowEl = document.createElement('div');
+        rowEl.className = 'grid grid-cols-[1fr_44px_1fr] items-center w-full';
+
+        // LEFT SIDE
+        const leftWrap = document.createElement('div');
+        leftWrap.className = 'flex items-center justify-end';
+
+        if (row.left) {
+          if (row.left.farLeft) {
+            const farCard = document.createElement('div');
+            farCard.onclick = () => openNodeInfoDrawer(row.left.farLeft);
+            farCard.className = 'node-card w-[148px] h-[54px] bg-[#c6c8ca] text-white font-semibold text-[12px] leading-tight flex items-center justify-center text-center px-2 whitespace-pre-line';
+            farCard.textContent = row.left.farLeft.title;
+            leftWrap.appendChild(farCard);
+
+            const hConnector = document.createElement('div');
+            hConnector.className = 'w-[28px] h-[1.5px] bg-[#7a7a7a]';
+            leftWrap.appendChild(hConnector);
+          }
+
+          const leftCard = document.createElement('div');
+          const leftIsChevron = row.left.type === 'red-chevron';
+          const leftIsRust = row.left.type === 'rust-chevron';
+          leftCard.onclick = () => isDrillable(row.left.id) ? openDrillDown(row.left.id) : openNodeInfoDrawer(row.left);
+          leftCard.className = `node-card w-[285px] h-[48px] text-white font-semibold text-[12.5px] leading-tight flex items-center justify-center text-center whitespace-pre-line ${
+            leftIsChevron
+              ? 'bg-[#cc1c2f] chevron-left font-bold'
+              : leftIsRust
+                ? 'bg-[#c84426] chevron-left font-bold'
+                : 'bg-[#6e6f71] px-3'
+          }`;
+          leftCard.textContent = row.left.title;
+          leftWrap.appendChild(leftCard);
+        }
+
+        // CENTER CONNECTOR BRIDGE
+        const centerBridge = document.createElement('div');
+        centerBridge.className = 'w-full h-[1.5px] bg-[#7a7a7a]';
+
+        // RIGHT SIDE
+        const rightWrap = document.createElement('div');
+        rightWrap.className = 'flex items-center justify-start';
+
+        if (row.right) {
+          const rightCard = document.createElement('div');
+          const isRust = row.right.type === 'rust-chevron';
+          rightCard.onclick = () => isDrillable(row.right.id) ? openDrillDown(row.right.id) : openNodeInfoDrawer(row.right);
+          rightCard.className = `node-card w-[285px] h-[48px] text-white font-bold text-[12.5px] leading-tight flex items-center justify-center text-center whitespace-pre-line chevron-right ${
+            isRust ? 'bg-[#c84426]' : 'bg-[#cc1c2f]'
+          }`;
+          rightCard.textContent = row.right.title;
+          rightWrap.appendChild(rightCard);
+        }
+
+        rowEl.appendChild(leftWrap);
+        rowEl.appendChild(centerBridge);
+        rowEl.appendChild(rightWrap);
+        branchesContainer.appendChild(rowEl);
+      });
+
+      // BOTTOM GENERAL DIRECTORATES (πλήθος δυναμικό)
+      const bus = document.getElementById('bottom-bus');
+      const bottomContainer = document.getElementById('bottom-gd-container');
+      bus.innerHTML = '';
+      bottomContainer.innerHTML = '';
+      const count = BOTTOM_GENERAL_DIRECTORATES.length;
+      const cols = `repeat(${Math.max(count, 1)}, minmax(0, 1fr))`;
+      bus.style.gridTemplateColumns = cols;
+      bottomContainer.style.gridTemplateColumns = cols;
+
+      BOTTOM_GENERAL_DIRECTORATES.forEach((gd, i) => {
+        const cell = document.createElement('div');
+        cell.className = 'relative h-[18px] flex justify-center';
+        if (count > 1) {
+          const h = document.createElement('div');
+          h.className = 'absolute top-0 h-[1.5px] bg-[#7a7a7a]';
+          h.style.left = i === 0 ? '50%' : '-4px';
+          h.style.right = i === count - 1 ? '50%' : '-4px';
+          cell.appendChild(h);
+        }
+        const v = document.createElement('div');
+        v.className = 'w-[1.5px] h-full bg-[#7a7a7a]';
+        cell.appendChild(v);
+        bus.appendChild(cell);
+
+        const card = document.createElement('div');
+        card.onclick = () => isDrillable(gd.id) ? openDrillDown(gd.id) : openNodeInfoDrawer(gd);
+        card.className = 'node-card ribbon-down w-full min-h-[118px] bg-[#b05b09] text-white font-bold text-[11.5px] leading-[1.28] flex items-center justify-center text-center px-1.5 pt-2 whitespace-pre-line shadow-xs';
+        card.textContent = gd.title;
+        bottomContainer.appendChild(card);
+      });
+
+      renderMobileChart();
+    }
+
+    function renderMobileChart() {
+      const el = document.getElementById('main-chart-mobile');
+      if (!el) return;
+      el.innerHTML = '';
+
+      const bgFor = (type) => ({
+        'red-chevron': 'bg-[#cc1c2f]',
+        'rust-chevron': 'bg-[#c84426]',
+        'light-grey-rect': 'bg-[#c6c8ca]'
+      }[type] || 'bg-[#6e6f71]');
+
+      const makeCard = (node, bg, extra = '') => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = `node-card w-full min-h-[48px] rounded-md px-3 py-2.5 text-white text-[13px] leading-snug font-semibold flex items-center justify-between gap-2 text-left shadow-xs ${bg} ${extra}`;
+        const label = document.createElement('span');
+        label.textContent = node.title;
+        b.appendChild(label);
+        if (isDrillable(node.id)) {
+          const chev = document.createElement('span');
+          chev.className = 'text-lg leading-none opacity-80 shrink-0';
+          chev.textContent = '›';
+          b.appendChild(chev);
+        }
+        b.onclick = () => isDrillable(node.id) ? openDrillDown(node.id) : openNodeInfoDrawer(node);
+        return b;
+      };
+
+      const heading = (text) => {
+        const h = document.createElement('div');
+        h.className = 'mt-6 mb-2 text-[11px] font-bold uppercase tracking-wider text-gray-400';
+        h.textContent = text;
+        return h;
+      };
+
+      // Top nodes
+      const top = document.createElement('div');
+      top.className = 'flex flex-col items-center';
+      TOP_NODES.forEach((u, i) => {
+        if (i > 0) {
+          const line = document.createElement('div');
+          line.className = 'w-[1.5px] h-3 bg-[#7a7a7a]';
+          top.appendChild(line);
+        }
+        top.appendChild(makeCard(mainNode(u), 'bg-[#5e1416]', 'justify-center text-center'));
+      });
+      el.appendChild(top);
+
+      // Offices & directorates (αριστερή στήλη πρώτα, μετά δεξιά)
+      const items = [
+        ...CENTRAL_ROWS.map((r) => r.left),
+        ...CENTRAL_ROWS.map((r) => r.right)
+      ].filter(Boolean);
+
+      if (items.length) {
+        el.appendChild(heading('Γραφεία & Διευθύνσεις'));
+        const list = document.createElement('div');
+        list.className = 'grid grid-cols-1 md:grid-cols-2 gap-2 items-start';
+        items.forEach((node) => {
+          const cell = document.createElement('div');
+          cell.className = 'flex flex-col gap-2';
+          cell.appendChild(makeCard(node, bgFor(node.type)));
+          if (node.farLeft) {
+            const nest = document.createElement('div');
+            nest.className = 'pl-6';
+            nest.appendChild(makeCard(node.farLeft, bgFor(node.farLeft.type)));
+            cell.appendChild(nest);
+          }
+          list.appendChild(cell);
+        });
+        el.appendChild(list);
+      }
+
+      // General directorates
+      if (BOTTOM_GENERAL_DIRECTORATES.length) {
+        el.appendChild(heading('Γενικές Διευθύνσεις'));
+        const grid = document.createElement('div');
+        grid.className = 'grid grid-cols-2 md:grid-cols-3 gap-2 pb-6';
+        BOTTOM_GENERAL_DIRECTORATES.forEach((gd) => {
+          grid.appendChild(makeCard(gd, 'bg-[#b05b09]', 'min-h-[64px] text-[12px] justify-center text-center'));
+        });
+        el.appendChild(grid);
+      }
+    }
+
+    /**
+     * ============================================================================
+     * RENDER DRILL-DOWN VIEW (IMAGE 2)
+     * FIX 1: Clicking a Red Directorate box opens the right-hand drawer with staff.
+     *        Expanding/collapsing a Red Directorate is done via the dedicated '+' / '−' button!
+     * FIX 2: 'Τμήμα Ανάπτυξης Εφαρμογών' stays strictly anchored at the top of its
+     *        sub-tree container (flex-col items-start) and expands downward cleanly.
+     * ============================================================================
+     */
+    let currentZoom = 1;
+    let currentTreeData = null;
+    let collapsedColumns = new Set();
+    const expandedSubNodes = new Set();
+
+    function openDrillDown(nodeId) {
+      collapsedColumns.clear();
+      expandedSubNodes.clear();
+      currentZoom = 1;
+
+      const treeData = buildDynamicOrgTree(nodeId);
+      if (!treeData) return;
+      currentTreeData = treeData;
+
+      document.getElementById('main-chart-view').classList.add('hidden');
+      const drillView = document.getElementById('drilldown-view');
+      drillView.classList.remove('hidden');
+      drillView.classList.add('animate-view');
+
+      document.getElementById('btn-back-main').classList.remove('hidden');
+      document.getElementById('btn-back-main').classList.add('flex');
+      document.getElementById('breadcrumb-subtitle').textContent = `Διοίκηση › ${treeData.title}`;
+
+      renderDrillTree();
+      resetZoomPan();
+    }
+
+    function showMainChart() {
+      document.getElementById('drilldown-view').classList.add('hidden');
+      const mainView = document.getElementById('main-chart-view');
+      mainView.classList.remove('hidden');
+      mainView.classList.add('animate-view');
+
+      document.getElementById('btn-back-main').classList.add('hidden');
+      document.getElementById('btn-back-main').classList.remove('flex');
+      document.getElementById('breadcrumb-subtitle').textContent = 'Κεντρική Δομή Διοίκησης & Γενικών Διευθύνσεων';
+      closeSideDrawer();
+    }
+
+    function getStyleClasses(style) {
+      switch (style) {
+        case 'maroon':
+          return 'bg-[#5e1416] text-white font-bold';
+        case 'orange':
+          return 'bg-[#b05b09] text-white font-bold';
+        case 'red':
+          return 'bg-[#cc1c2f] text-white font-semibold';
+        case 'rust':
+          return 'bg-[#c84426] text-white font-semibold';
+        case 'dark-grey':
+          return 'bg-[#6e6f71] text-white font-medium';
+        case 'med-grey':
+          return 'bg-[#8d8f92] text-white font-medium';
+        case 'light-grey':
+          return 'bg-[#cccccc] text-gray-800 font-semibold';
+        default:
+          return 'bg-[#8d8f92] text-white font-medium';
+      }
+    }
+
+    function createInfoBadge(nodeObj) {
+      const badge = document.createElement('button');
+      badge.type = 'button';
+      badge.className = 'info-badge';
+      badge.textContent = 'i';
+      badge.title = 'Προβολή στοιχείων & προσωπικού μονάδας';
+      badge.onclick = (e) => {
+        e.stopPropagation();
+        openNodeInfoDrawer(nodeObj);
+      };
+      return badge;
+    }
+
+    function createSubtreeToggle(node, subtree, units) {
+      subtree.id = `subtree-${node.id}`;
+
+      const toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'expand-toggle-sub-btn';
+      toggle.setAttribute('aria-controls', subtree.id);
+
+      function updateToggle() {
+        const expanded = expandedSubNodes.has(node.id);
+        subtree.hidden = !expanded;
+        toggle.textContent = expanded ? '−' : '+';
+        toggle.title = `${expanded ? 'Σύμπτυξη' : 'Ανάπτυξη'} ${units}`;
+        toggle.setAttribute('aria-label', `${toggle.title} — ${node.title}`);
+        toggle.setAttribute('aria-expanded', String(expanded));
+      }
+
+      toggle.onclick = (e) => {
+        e.stopPropagation();
+        if (expandedSubNodes.has(node.id)) expandedSubNodes.delete(node.id);
+        else expandedSubNodes.add(node.id);
+        updateToggle();
+      };
+      updateToggle();
+
+      return toggle;
+    }
+
+    function renderDrillTree() {
+      const container = document.getElementById('drill-zoom-container');
+      container.innerHTML = '';
+
+      if (!currentTreeData) return;
+      const isNarrow = window.matchMedia('(max-width: 767px)').matches;
+
+      // 1. Top Parent Node: "Διοίκηση"
+      const topParentBtn = document.createElement('button');
+      topParentBtn.type = 'button';
+      topParentBtn.onclick = () => showMainChart();
+      topParentBtn.title = 'Επιστροφή στη Διοίκηση (Κεντρικό Οργανόγραμμα)';
+      topParentBtn.className = 'drill-card w-[178px] h-[52px] bg-[#5e1416] text-white font-bold text-[13px] flex items-center justify-center gap-2 px-3 cursor-pointer';
+      topParentBtn.innerHTML = `
+        <svg class="w-4 h-4 text-[#e06d3b] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h12a4 4 0 0 1 0 8H8M20 12H8a4 4 0 0 1 0-8h8" />
+        </svg>
+        <span>${esc(currentTreeData.parentLabel || 'Διοίκηση')}</span>
+      `;
+      container.appendChild(topParentBtn);
+
+      // Orange vertical connector line down to Active Directorate
+      const line1 = document.createElement('div');
+      line1.className = 'w-[1.5px] h-[34px] bg-[#e68a2e] shrink-0';
+      container.appendChild(line1);
+
+      // 2. Active Directorate Card inside pale yellow halo
+      const activeHalo = document.createElement('div');
+      activeHalo.className = 'active-gd-halo';
+
+      const activeCard = document.createElement('div');
+      activeCard.onclick = () => openNodeInfoDrawer(currentTreeData);
+      activeCard.className = `drill-card relative w-[184px] min-h-[54px] px-3 py-2 text-[12px] leading-snug flex items-center justify-center text-center cursor-pointer ${getStyleClasses(currentTreeData.colorType || 'orange')}`;
+      activeCard.innerHTML = `<span>${esc(currentTreeData.title)}${currentTreeData.hasSymbol ? ' <span class="text-[10px] opacity-90">❖</span>' : ''}</span>`;
+      activeCard.appendChild(createInfoBadge(currentTreeData));
+      activeHalo.appendChild(activeCard);
+      container.appendChild(activeHalo);
+
+      // Orange vertical stem down to Horizontal Bus
+      const line2 = document.createElement('div');
+      line2.className = 'w-[1.5px] h-[24px] bg-[#e68a2e] shrink-0';
+      container.appendChild(line2);
+
+      // 3. Horizontal Distribution Bus & Columns Row
+      const cols = currentTreeData.columns || [];
+      if (cols.length === 0) return;
+
+      const columnsWrapper = document.createElement('div');
+      columnsWrapper.className = isNarrow
+        ? 'relative flex flex-col items-start gap-6 pt-0'
+        : 'relative flex items-start justify-center gap-4 pt-0';
+
+      cols.forEach((col, idx) => {
+        const colContainer = document.createElement('div');
+        colContainer.className = 'relative flex flex-col items-start';
+
+        // Horizontal Bus Segment at top of each column
+        const busRow = document.createElement('div');
+        busRow.className = 'relative w-full h-[22px] flex items-center justify-start shrink-0';
+
+        if (cols.length > 1) {
+          const hLine = document.createElement('div');
+          hLine.className = 'absolute top-0 h-[1.5px] bg-[#e68a2e]';
+          if (idx === 0) {
+            hLine.style.left = '86px';
+            hLine.style.right = '-16px';
+          } else if (idx === cols.length - 1) {
+            hLine.style.left = '0';
+            hLine.style.width = '86px';
+          } else {
+            hLine.style.left = '0';
+            hLine.style.right = '-16px';
+          }
+          busRow.appendChild(hLine);
+        }
+
+        // Vertical drop into column card (aligned with column center 86px)
+        const vDrop = document.createElement('div');
+        vDrop.className = 'w-[1.5px] h-full bg-[#e68a2e] ml-[86px]';
+        busRow.appendChild(vDrop);
+        if (!isNarrow) colContainer.appendChild(busRow);
+
+        // Column Header Card (Grey Office or Red Directorate)
+        const isCollapsed = collapsedColumns.has(col.id);
+        const hasChildren = col.children && col.children.length > 0;
+        const cardWidth = col.style === 'red' ? 'w-[184px]' : 'w-[172px]';
+
+        const colCard = document.createElement('div');
+        colCard.className = `drill-card relative ${cardWidth} min-h-[56px] px-2.5 py-2 text-[11.5px] leading-[1.28] flex items-center justify-center text-center cursor-pointer ${getStyleClasses(col.style)}`;
+        colCard.innerHTML = `<span>${esc(col.title)}${col.hasSymbol ? ' <span class="text-[10px] opacity-90">❖</span>' : ''}</span>`;
+
+        // FIX 1: Clicking the red box (or grey office box) ALWAYS opens the right-hand slide-over drawer with people!
+        colCard.onclick = () => {
+          openNodeInfoDrawer(col);
+        };
+
+        colCard.appendChild(createInfoBadge(col));
+
+        // FIX 1: Dedicated '+' / '−' button on Red Directorates (any column with children) to expand/collapse!
+        if (hasChildren) {
+          const expandBtn = document.createElement('button');
+          expandBtn.type = 'button';
+          expandBtn.className = 'expand-toggle-btn';
+          expandBtn.textContent = isCollapsed ? '+' : '−';
+          expandBtn.title = isCollapsed ? 'Ανάπτυξη τμημάτων (+)' : 'Σύμπτυξη τμημάτων (−)';
+          expandBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (collapsedColumns.has(col.id)) collapsedColumns.delete(col.id);
+            else collapsedColumns.add(col.id);
+            renderDrillTree();
+          };
+          colCard.appendChild(expandBtn);
+        }
+
+        colContainer.appendChild(colCard);
+
+        // Vertical Spine + Children List under Red Directorates
+        if (hasChildren && !isCollapsed) {
+          const childrenWrapper = document.createElement('div');
+          childrenWrapper.className = 'w-full flex flex-col items-start pl-3 pt-0';
+
+          // Short vertical drop from Red card down to left spine
+          const topDrop = document.createElement('div');
+          topDrop.className = 'w-[1.5px] h-[18px] bg-[#e68a2e] ml-[28px] shrink-0';
+          childrenWrapper.appendChild(topDrop);
+
+          // Left-aligned vertical spine container
+          const spineList = document.createElement('div');
+          spineList.className = 'relative flex flex-col items-start gap-3.5 pl-[14px] ml-[4px]';
+
+          col.children.forEach((child, cIdx) => {
+            const isLastChild = cIdx === col.children.length - 1;
+
+            // Strict top-to-bottom block so parent card stays pinned at top while children expand downward below it
+            const childRow = document.createElement('div');
+            childRow.className = 'relative flex flex-col items-start w-full';
+
+            // Vertical spine line segment along the left of this department row
+            const vSpine = document.createElement('div');
+            vSpine.className = 'absolute left-[-14px] top-0 w-[1.5px] bg-[#e68a2e] pointer-events-none';
+            if (cIdx === 0) {
+              const bridgeTop = document.createElement('div');
+              bridgeTop.className = 'absolute left-[-14px] top-0 w-[39.5px] h-[1.5px] bg-[#e68a2e] pointer-events-none';
+              childRow.appendChild(bridgeTop);
+            }
+            // Spine stops at center of this parent card (26px) if last child, otherwise spans full height of row + gap
+            vSpine.style.height = isLastChild ? '27px' : 'calc(100% + 14px)';
+            childRow.appendChild(vSpine);
+
+            // Horizontal tick pointing into the parent department card (at fixed Y = 26px from top of childRow)
+            const hTick = document.createElement('div');
+            hTick.className = 'absolute left-[-14px] top-[26px] w-[14px] h-[1.5px] bg-[#e68a2e] pointer-events-none';
+            childRow.appendChild(hTick);
+
+            // 1. FIRST in DOM: Department Card (stays fixed at top of childRow)
+            const childCard = document.createElement('div');
+            childCard.className = `drill-card relative w-[180px] min-h-[52px] px-2.5 py-2 text-[11px] leading-[1.28] flex items-center justify-center text-center cursor-pointer ${getStyleClasses(child.style || 'med-grey')}`;
+            childCard.textContent = child.title;
+
+            const hasSub = child.subChildren && child.subChildren.length > 0;
+
+            // Clicking the department box opens the personnel slide-over drawer
+            childCard.onclick = () => {
+              openNodeInfoDrawer(child);
+            };
+
+            childCard.appendChild(createInfoBadge(child));
+
+            childRow.appendChild(childCard);
+
+            // Keep nested cards within the department's width as the branch opens.
+            if (hasSub) {
+              const subWrapper = document.createElement('div');
+              subWrapper.className = 'nested-units relative flex flex-col items-start gap-3 pl-[16px] ml-[29px] pt-3.5';
+              childCard.appendChild(createSubtreeToggle(child, subWrapper, 'γραφείων'));
+
+              child.subChildren.forEach((sub, sIdx) => {
+                const isLastSub = sIdx === child.subChildren.length - 1;
+                const subRow = document.createElement('div');
+                subRow.className = 'relative flex flex-col items-start w-full';
+
+                // Vertical spine connecting bottom of childCard down to subCard (25px from top of subRow)
+                const subVSpine = document.createElement('div');
+                subVSpine.className = 'absolute left-[-16px] top-[-14px] w-[1.5px] bg-[#e68a2e] pointer-events-none';
+                subVSpine.style.height = isLastSub ? '40px' : 'calc(100% + 26px)';
+                subRow.appendChild(subVSpine);
+
+                const subHTick = document.createElement('div');
+                subHTick.className = 'absolute left-[-16px] top-[25px] w-[16px] h-[1.5px] bg-[#e68a2e] pointer-events-none';
+                subRow.appendChild(subHTick);
+
+                const subCard = document.createElement('div');
+                subCard.className = `drill-card relative w-[135px] min-h-[50px] px-2.5 py-2 text-[11px] leading-[1.28] flex items-center justify-center text-center cursor-pointer ${getStyleClasses(sub.style || 'light-grey')}`;
+                subCard.textContent = sub.title;
+
+                const hasGrandSub = sub.subChildren && sub.subChildren.length > 0;
+
+                subCard.onclick = () => {
+                  openNodeInfoDrawer(sub);
+                };
+
+                subCard.appendChild(createInfoBadge(sub));
+
+                subRow.appendChild(subCard);
+
+                // Level 3 Nested (e.g., Ομάδα Σχεδιασμού under Γραφείο Front-End)
+                if (hasGrandSub) {
+                  const grandWrapper = document.createElement('div');
+                  grandWrapper.className = 'nested-units relative flex flex-col items-start gap-2.5 pl-[16px] ml-[29px] pt-3.5';
+                  subCard.appendChild(createSubtreeToggle(sub, grandWrapper, 'ομάδων'));
+
+                  sub.subChildren.forEach((grand, gIdx) => {
+                    const isLastGrand = gIdx === sub.subChildren.length - 1;
+                    const grandRow = document.createElement('div');
+                    grandRow.className = 'relative flex flex-col items-start w-full';
+
+                    const gVSpine = document.createElement('div');
+                    gVSpine.className = 'absolute left-[-16px] top-[-14px] w-[1.5px] bg-[#e68a2e] pointer-events-none';
+                    gVSpine.style.height = isLastGrand ? '38px' : 'calc(100% + 24px)';
+                    grandRow.appendChild(gVSpine);
+
+                    const gHTick = document.createElement('div');
+                    gHTick.className = 'absolute left-[-16px] top-[23px] w-[16px] h-[1.5px] bg-[#e68a2e] pointer-events-none';
+                    grandRow.appendChild(gHTick);
+
+                    const grandCard = document.createElement('div');
+                    grandCard.className = `drill-card relative w-[90px] min-h-[46px] px-2.5 py-2 text-[11px] leading-[1.28] flex items-center justify-center text-center cursor-pointer ${getStyleClasses(grand.style || 'light-grey')}`;
+                    grandCard.textContent = grand.title;
+                    grandCard.onclick = () => openNodeInfoDrawer(grand);
+                    grandCard.appendChild(createInfoBadge(grand));
+
+                    grandRow.appendChild(grandCard);
+                    grandWrapper.appendChild(grandRow);
+                  });
+
+                  subRow.appendChild(grandWrapper);
+                }
+
+                subWrapper.appendChild(subRow);
+              });
+
+              childRow.appendChild(subWrapper);
+            }
+
+            spineList.appendChild(childRow);
+          });
+
+          childrenWrapper.appendChild(spineList);
+          colContainer.appendChild(childrenWrapper);
+        }
+
+        columnsWrapper.appendChild(colContainer);
+      });
+
+      container.appendChild(columnsWrapper);
+    }
+
+    /**
+     * ============================================================================
+     * ZOOM & DRAG PAN CONTROLS FOR DRILL-DOWN CANVAS
+     * ============================================================================
+     */
+    function adjustZoom(delta) {
+      currentZoom = Math.min(1.55, Math.max(0.55, +(currentZoom + delta).toFixed(2)));
+      const zoomContainer = document.getElementById('drill-zoom-container');
+      zoomContainer.style.transform = `scale(${currentZoom})`;
+    }
+
+    function resetZoomPan() {
+      currentZoom = 1;
+      const zoomContainer = document.getElementById('drill-zoom-container');
+      zoomContainer.style.transform = 'scale(1)';
+      const viewport = document.getElementById('drill-viewport');
+      viewport.scrollTo({ top: 0, left: (viewport.scrollWidth - viewport.clientWidth) / 2, behavior: 'smooth' });
+    }
+
+    // Mouse drag-to-pan on drill-down viewport
+    (function enableDragPan() {
+      const viewport = document.getElementById('drill-viewport');
+      if (!viewport) return;
+      let isDown = false;
+      let startX = 0;
+      let startY = 0;
+      let scrollLeft = 0;
+      let scrollTop = 0;
+
+      viewport.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.drill-card') || e.target.closest('button')) return;
+        isDown = true;
+        startX = e.pageX - viewport.offsetLeft;
+        startY = e.pageY - viewport.offsetTop;
+        scrollLeft = viewport.scrollLeft;
+        scrollTop = viewport.scrollTop;
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDown = false;
+      });
+
+      viewport.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - viewport.offsetLeft;
+        const y = e.pageY - viewport.offsetTop;
+        viewport.scrollLeft = scrollLeft - (x - startX);
+        viewport.scrollTop = scrollTop - (y - startY);
+      });
+    })();
+
+    /**
+     * ============================================================================
+     * SLIDE-OVER INFO & PERSONNEL DRAWER
+     * Displays Head of Unit + Complete Personnel List for clicked unit
+     * ============================================================================
+     */
+    let isDrawerOpen = false;
+
+    function getUnitPersonnel(unitId) {
+      if (!unitId) return [];
+      return PERSONNEL_LIST.filter((p) => p.unit_id === unitId);
+    }
+
+    function openNodeInfoDrawer(node) {
+      const title = (node.title || '').replace(/\n/g, ' ');
+      const unitPeople = getUnitPersonnel(node.id);
+      const headPerson = unitPeople.find((p) => p.is_head) || unitPeople[0];
+
+      const meta = node.meta || {
+        head: headPerson ? headPerson.full_name : 'Επικεφαλής Μονάδας',
+        role: headPerson ? headPerson.job_title : 'Προϊστάμενος / Διευθυντής',
+        staff: unitPeople.length > 0 ? `${unitPeople.length} άτομα` : '12 άτομα',
+        ext: headPerson?.phone || '210-3500',
+        email: headPerson?.email || 'department@enterprise.gr',
+        responsibilities: [
+          `Εποπτεία, συντονισμός και εύρυθμη λειτουργία της μονάδας «${title}».`,
+          'Υλοποίηση στόχων και αναφορά αποτελεσμάτων στη Διοίκηση.'
+        ]
+      };
+
+      const displayHeadName = headPerson ? headPerson.full_name : meta.head;
+      const displayHeadRole = headPerson ? headPerson.job_title : meta.role;
+      const displayPhone = meta.ext || headPerson?.phone || '—';
+      const displayEmail = meta.email || headPerson?.email || '—';
+
+      document.getElementById('drawer-title').textContent = title;
+      document.getElementById('drawer-head').textContent = displayHeadName;
+      document.getElementById('drawer-role').textContent = displayHeadRole;
+      document.getElementById('drawer-staff').textContent = unitPeople.length > 0 ? `${unitPeople.length} καταχωρημένα άτομα` : meta.staff;
+      document.getElementById('drawer-ext').textContent = displayPhone;
+      document.getElementById('drawer-email').textContent = displayEmail;
+
+      // Avatar initials
+      const initials = displayHeadName
+        .split(' ')
+        .slice(0, 2)
+        .map((w) => w[0])
+        .join('')
+        .toUpperCase();
+      document.getElementById('drawer-avatar').textContent = initials || 'ΟΜ';
+
+      // Badge label
+      let badgeLabel = 'Οργανωτική Μονάδα';
+      if (title.includes('Γενική Διεύθυνση') || title.includes('Γεν.')) badgeLabel = 'Γενική Διεύθυνση';
+      else if (title.includes('Διεύθυνση')) badgeLabel = 'Διεύθυνση';
+      else if (title.includes('Τμήμα')) badgeLabel = 'Τμήμα';
+      else if (title.includes('Γραφείο') || title.includes('Ομάδα')) badgeLabel = 'Γραφείο / Ομάδα';
+      document.getElementById('drawer-badge').textContent = badgeLabel;
+
+      // Render Personnel List
+      const peopleListEl = document.getElementById('drawer-personnel-list');
+      const peopleCountEl = document.getElementById('drawer-people-count');
+      peopleListEl.innerHTML = '';
+      peopleCountEl.textContent = unitPeople.length;
+
+      if (unitPeople.length === 0) {
+        peopleListEl.innerHTML = `
+          <div class="p-3 rounded-lg border border-dashed border-gray-300 bg-gray-50 text-xs text-gray-500 text-center">
+            Δεν υπάρχουν καταχωρημένα μέλη προσωπικού για αυτή τη μονάδα. Προσθέστε γραμμές <code>PERSON</code> με <code>unit_id = ${esc(node.id || 'id')}</code> στα δεδομένα του API.
+          </div>
+        `;
+      } else {
+        // Sort head first
+        const sorted = [...unitPeople].sort((a, b) => (b.is_head === true) - (a.is_head === true));
+        sorted.forEach((person) => {
+          const pInitials = person.full_name
+            .split(' ')
+            .slice(0, 2)
+            .map((w) => w[0])
+            .join('')
+            .toUpperCase();
+          const card = document.createElement('div');
+          card.className = 'p-2.5 rounded-lg border border-gray-200 bg-white hover:border-gray-300 transition flex items-start gap-2.5';
+          card.innerHTML = `
+            <div class="w-8 h-8 rounded-full ${person.is_head ? 'bg-[#b05b09] text-white' : 'bg-gray-200 text-gray-700'} font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+              ${esc(pInitials || 'ΥΠ')}
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-bold text-gray-900 truncate">${esc(person.full_name)}</span>
+                ${person.is_head ? '<span class="px-1.5 py-0.2 bg-amber-100 text-amber-800 text-[9px] font-bold rounded">Επικεφαλής</span>' : ''}
+              </div>
+              <div class="text-[11px] text-gray-600 truncate">${esc(person.job_title)}</div>
+              <div class="text-[10px] text-gray-500 mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
+                ${person.email ? `<span class="text-blue-700">${esc(person.email)}</span>` : ''}
+                ${person.phone ? `<span>Τηλ: ${esc(person.phone)}</span>` : ''}
+              </div>
+            </div>
+          `;
+          peopleListEl.appendChild(card);
+        });
+      }
+
+      // Responsibilities list
+      const listEl = document.getElementById('drawer-responsibilities');
+      listEl.innerHTML = '';
+      (meta.responsibilities || []).forEach((item) => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        listEl.appendChild(li);
+      });
+
+      // Show drill-down button if node is a top-level unit and we are on main view
+      const drillActionBox = document.getElementById('drawer-drill-action');
+      const drillBtn = document.getElementById('drawer-open-subchart-btn');
+      if (node.id && findMainNodeById(node.id) && document.getElementById('drilldown-view').classList.contains('hidden')) {
+        drillActionBox.classList.remove('hidden');
+        drillBtn.onclick = () => {
+          closeSideDrawer();
+          openDrillDown(node.id);
+        };
+      } else {
+        drillActionBox.classList.add('hidden');
+      }
+
+      openSideDrawer();
+    }
+
+    function openSideDrawer() {
+      isDrawerOpen = true;
+      document.getElementById('info-drawer').classList.remove('translate-x-full');
+      document.getElementById('drawer-tab-icon').classList.add('rotate-180');
+    }
+
+    function closeSideDrawer() {
+      isDrawerOpen = false;
+      document.getElementById('info-drawer').classList.add('translate-x-full');
+      document.getElementById('drawer-tab-icon').classList.remove('rotate-180');
+    }
+
+    function toggleSideDrawer() {
+      if (isDrawerOpen) {
+        closeSideDrawer();
+      } else {
+        if (currentTreeData) openNodeInfoDrawer(currentTreeData);
+        else openSideDrawer();
+      }
+    }
+
+    /**
+     * ============================================================================
+     * INSTANT SEARCH ACROSS ALL DIRECTORATES, DEPARTMENTS & PERSONNEL
+     * ============================================================================
+     */
+    function getAllSearchableUnits() {
+      const results = [];
+      Object.values(UNITS).forEach((u) => {
+        const parent = UNITS[u.parent_id];
+        results.push({
+          kind: 'unit',
+          title: u.title,
+          parent: parent ? parent.title : 'Κεντρικό Οργανόγραμμα',
+          rootId: mainAncestorId(u.id),
+          nodeObj: mainNode(u)
+        });
+      });
+      PERSONNEL_LIST.forEach((p) => {
+        const u = UNITS[p.unit_id];
+        results.push({
+          kind: 'person',
+          title: p.full_name,
+          parent: `${p.job_title} • ${u ? u.title : ''}`,
+          rootId: u ? mainAncestorId(u.id) : null,
+          nodeObj: u ? mainNode(u) : null
+        });
+      });
+      return results;
+    }
+
+    function handleSearch(query) {
+      const dropdown = document.getElementById('search-results');
+      const q = query.trim().toLowerCase();
+
+      if (!q) {
+        dropdown.classList.add('hidden');
+        dropdown.innerHTML = '';
+        return;
+      }
+
+      const allUnits = getAllSearchableUnits();
+      const matches = allUnits.filter(
+        (u) => u.title.toLowerCase().includes(q) || u.parent.toLowerCase().includes(q)
+      ).slice(0, 12);
+
+      dropdown.innerHTML = '';
+      if (matches.length === 0) {
+        dropdown.innerHTML = `<div class="p-3 text-xs text-gray-500 text-center">Δεν βρέθηκαν αποτελέσματα για «${esc(query)}»</div>`;
+      } else {
+        matches.forEach((m) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'w-full text-left px-3 py-2 hover:bg-gray-50 transition flex flex-col';
+          btn.innerHTML = `
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-semibold text-gray-900">${esc(m.title)}</span>
+              <span class="text-[9px] font-bold px-1.5 py-0.5 rounded ${m.kind === 'person' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-600'}">${m.kind === 'person' ? 'Στέλεχος' : 'Μονάδα'}</span>
+            </div>
+            <span class="text-[10px] text-gray-500 truncate">${esc(m.parent)}</span>
+          `;
+          btn.onclick = () => {
+            dropdown.classList.add('hidden');
+            document.getElementById('org-search').value = '';
+            if (m.rootId && isDrillable(m.rootId)) openDrillDown(m.rootId); else showMainChart();
+            if (m.nodeObj) {
+              openNodeInfoDrawer(m.nodeObj);
+            }
+          };
+          dropdown.appendChild(btn);
+        });
+      }
+
+      dropdown.classList.remove('hidden');
+    }
+
+    /**
+     * ============================================================================
+     * ΦΟΡΤΩΣΗ ΔΕΔΟΜΕΝΩΝ ΑΠΟ ΤΟ API
+     * ============================================================================
+     */
+    function setStatus(kind, msg) {
+      const wrap = document.getElementById('load-status');
+      const box = document.getElementById('load-status-box');
+      if (!kind) { wrap.classList.add('hidden'); box.innerHTML = ''; return; }
+      wrap.classList.remove('hidden');
+      if (kind === 'loading') {
+        box.className = 'px-4 py-2.5 rounded-lg shadow-lg border text-xs font-medium bg-white text-gray-700 border-gray-200 flex items-center gap-2';
+        box.innerHTML = '<span class="inline-block w-3.5 h-3.5 border-2 border-gray-300 border-t-[#5e1416] rounded-full animate-spin"></span><span>Φόρτωση οργανογράμματος…</span>';
+      } else {
+        box.className = 'px-4 py-3 rounded-lg shadow-lg border text-xs font-medium bg-red-50 text-red-700 border-red-200 flex items-center gap-3';
+        box.innerHTML = '<span>Αδυναμία φόρτωσης: ' + esc(msg) + '</span><button type="button" onclick="loadChart()" class="px-2.5 py-1 rounded bg-[#5e1416] text-white font-semibold hover:bg-[#7a1b1e]">Επανάληψη</button>';
+      }
+    }
+
+    async function loadChart() {
+      setStatus('loading');
+      try {
+        const res = await fetch(API_URL, { headers: { Accept: 'application/json' }, cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const payload = await res.json();
+        indexData(payload);
+        renderMainChart();
+        if (currentTreeData) {
+          currentTreeData = buildDynamicOrgTree(currentTreeData.id);
+          if (currentTreeData) renderDrillTree(); else showMainChart();
+        }
+        setStatus(null);
+      } catch (err) {
+        setStatus('error', err.message);
+      }
+    }
+
+    // Close search dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#org-search') && !e.target.closest('#search-results')) {
+        document.getElementById('search-results').classList.add('hidden');
+      }
+    });
+
+    // Initialize Main Chart on Page Load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadChart();
+      window.matchMedia('(max-width: 767px)').addEventListener('change', () => {
+        const dv = document.getElementById('drilldown-view');
+        if (currentTreeData && !dv.classList.contains('hidden')) renderDrillTree();
+      });
+    });
+  </script>
+</body>
+</html>
