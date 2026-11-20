@@ -119,7 +119,8 @@ function buildActions(dataRows, cols) {
 
       const order = parseInt(cell(row, 'order_index'), 10);
       const side = SIDES[norm(cell(row, 'side'))] || '';
-
+      const pdf = cell(row, 'pdf_url');
+      
       actions.push({
         row_type: 'UNIT',
         id,
@@ -136,7 +137,8 @@ function buildActions(dataRows, cols) {
         email: cell(row, 'email'),
         phone: cell(row, 'phone'),
         description: cell(row, 'description') || null,
-        photo_url: null,
+        // Μόνο http(s): τίποτα άλλο δεν θα έπρεπε να ανοίγει από κλικ
+        pdf_url: /^https?:\/\//i.test(pdf) ? pdf : '',
       });
       return;
     }
