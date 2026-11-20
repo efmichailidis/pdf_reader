@@ -148,8 +148,14 @@
     .drill-card.no-link { cursor: default; }
     .node-card.no-link:hover { transform: none; filter: none; }
     .drill-card.no-link:hover { transform: none; filter: none; box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 1px 2px rgba(0, 0, 0, 0.1); }
-    .node-card:focus-visible,
-    .drill-card:focus-visible { outline: 2px solid #63c5ea; outline-offset: 2px; }
+
+    /* Σύνδεσμος PDF: πραγματικό <a href> που καλύπτει ολόκληρη την κάρτα (stretched link),
+       ώστε τα κουμπιά +/− να παραμένουν ξεχωριστά και κλικάρισμα από πάνω */
+    .card-link { color: inherit; text-decoration: none; }
+    .card-link::after { content: ''; position: absolute; inset: 0; z-index: 1; }
+    .card-link:focus-visible { outline: none; }
+    .node-card:has(.card-link:focus-visible),
+    .drill-card:has(.card-link:focus-visible) { outline: 2px solid #63c5ea; outline-offset: 2px; }
 
     /* Μικρό κουμπί "+" που ανοίγει τη δομή μιας μονάδας */
     .nav-btn {
@@ -409,21 +415,26 @@
       return /^https?:\/\//i.test(s) || (s.startsWith('/') && !s.startsWith('//')) ? s : '';
     }
 
-    function openLink(node) {
-      if (node && node.pdf_url) window.open(node.pdf_url, '_blank', 'noopener,noreferrer');
-    }
-
-    // Κάνει ένα στοιχείο κλικάρισμα προς το PDF του. Χωρίς pdf_url παραμένει απλό (μη κλικάρισμο).
-    function bindLink(el, node) {
+    // Γεμίζει μια κάρτα με τον τίτλο της. Αν έχει pdf_url, ο τίτλος είναι κανονικό <a href> (νέα καρτέλα)
+    // που καλύπτει όλη την κάρτα. Χωρίς pdf_url η κάρτα είναι απλό, μη κλικάρισμο στοιχείο.
+    function fillCard(el, node, html, cls) {
+      let label;
       if (node && node.pdf_url) {
-        el.onclick = () => openLink(node);
-        el.setAttribute('role', 'link');
-        el.tabIndex = 0;
-        el.onkeydown = (e) => { if (e.target === el && e.key === 'Enter') openLink(node); };
-        el.title = 'Άνοιγμα PDF';
+        label = document.createElement('a');
+        label.href = node.pdf_url;
+        label.target = '_blank';
+        label.rel = 'noopener noreferrer';
+        label.title = 'Άνοιγμα PDF';
+        label.className = 'card-link' + (cls ? ' ' + cls : '');
       } else {
+        label = document.createElement('span');
+        if (cls) label.className = cls;
         el.classList.add('no-link');
       }
+      if (html != null) label.innerHTML = html;
+      else label.textContent = node.title;
+      el.appendChild(label);
+      return label;
     }
 
     function indexData(payload) {
@@ -574,9 +585,8 @@
           topEl.appendChild(line);
         }
         const card = document.createElement('div');
-        card.className = 'node-card w-[260px] h-[52px] bg-[#5e1416] text-white font-bold text-[13px] flex items-center justify-center text-center px-3 shadow-xs';
-        card.textContent = u.title;
-        bindLink(card, mainNode(u));
+        card.className = 'node-card relative w-[260px] h-[52px] bg-[#5e1416] text-white font-bold text-[13px] flex items-center justify-center text-center px-3 shadow-xs';
+        fillCard(card, mainNode(u));
         topEl.appendChild(card);
       });
 
@@ -594,9 +604,8 @@
         if (row.left) {
           if (row.left.farLeft) {
             const farCard = document.createElement('div');
-            farCard.className = 'node-card w-[148px] h-[54px] bg-[#c6c8ca] text-white font-semibold text-[12px] leading-tight flex items-center justify-center text-center px-2 whitespace-pre-line';
-            farCard.textContent = row.left.farLeft.title;
-            bindLink(farCard, row.left.farLeft);
+            farCard.className = 'node-card relative w-[148px] h-[54px] bg-[#c6c8ca] text-white font-semibold text-[12px] leading-tight flex items-center justify-center text-center px-2 whitespace-pre-line';
+            fillCard(farCard, row.left.farLeft);
             leftWrap.appendChild(farCard);
 
             const hConnector = document.createElement('div');
@@ -614,9 +623,8 @@
                 ? 'bg-[#c84426] chevron-left font-bold'
                 : 'bg-[#6e6f71] px-3'
           }`;
-          leftCard.textContent = row.left.title;
-          bindLink(leftCard, row.left);
-        //   addNavButton(leftCard, row.left, 'right');
+          fillCard(leftCard, row.left);
+          addNavButton(leftCard, row.left, 'right');
           leftWrap.appendChild(leftCard);
         }
 
@@ -634,9 +642,8 @@
           rightCard.className = `node-card relative w-[285px] h-[48px] text-white font-bold text-[12.5px] leading-tight flex items-center justify-center text-center whitespace-pre-line chevron-right ${
             isRust ? 'bg-[#c84426]' : 'bg-[#cc1c2f]'
           }`;
-          rightCard.textContent = row.right.title;
-          bindLink(rightCard, row.right);
-        //   addNavButton(rightCard, row.right, 'left');
+          fillCard(rightCard, row.right);
+          addNavButton(rightCard, row.right, 'left');
           rightWrap.appendChild(rightCard);
         }
 
@@ -673,9 +680,8 @@
 
         const card = document.createElement('div');
         card.className = 'node-card ribbon-down relative w-full min-h-[118px] bg-[#b05b09] text-white font-bold text-[11.5px] leading-[1.28] flex items-center justify-center text-center px-1.5 pt-2 whitespace-pre-line shadow-xs';
-        card.textContent = gd.title;
-        bindLink(card, gd);
-        // addNavButton(card, gd, 'top-right');
+        fillCard(card, gd);
+        addNavButton(card, gd, 'top-right');
         bottomContainer.appendChild(card);
       });
 
@@ -700,11 +706,8 @@
 
       const makeCard = (node, bg, extra = '') => {
         const c = document.createElement('div');
-        c.className = `node-card w-full min-h-[48px] rounded-md px-3 py-2.5 text-white text-[13px] leading-snug font-semibold flex items-center justify-between gap-2 text-left shadow-xs ${bg} ${extra}`;
-        const label = document.createElement('span');
-        label.className = 'flex-1';
-        label.textContent = node.title;
-        c.appendChild(label);
+        c.className = `node-card relative w-full min-h-[48px] rounded-md px-3 py-2.5 text-white text-[13px] leading-snug font-semibold flex items-center justify-between gap-2 text-left shadow-xs ${bg} ${extra}`;
+        fillCard(c, node, null, 'flex-1');
         if (isDrillable(node.id)) {
           const b = document.createElement('button');
           b.type = 'button';
@@ -717,7 +720,6 @@
           b.onclick = (e) => { e.stopPropagation(); openDrillDown(node.id); };
           c.appendChild(b);
         }
-        bindLink(c, node);
         return c;
       };
 
@@ -896,8 +898,7 @@
 
       const activeCard = document.createElement('div');
       activeCard.className = `drill-card relative w-[184px] min-h-[54px] px-3 py-2 text-[12px] leading-snug flex items-center justify-center text-center ${getStyleClasses(currentTreeData.colorType || 'orange')}`;
-      activeCard.innerHTML = `<span>${esc(currentTreeData.title)}${currentTreeData.hasSymbol ? ' <span class="text-[10px] opacity-90">❖</span>' : ''}</span>`;
-      bindLink(activeCard, currentTreeData);
+      fillCard(activeCard, currentTreeData, `${esc(currentTreeData.title)}${currentTreeData.hasSymbol ? ' <span class="text-[10px] opacity-90">❖</span>' : ''}`);
       activeHalo.appendChild(activeCard);
       container.appendChild(activeHalo);
 
@@ -949,8 +950,7 @@
 
         const colCard = document.createElement('div');
         colCard.className = `drill-card relative ${cardWidth} min-h-[56px] px-2.5 py-2 text-[11.5px] leading-[1.28] flex items-center justify-center text-center ${getStyleClasses(col.style)}`;
-        colCard.innerHTML = `<span>${esc(col.title)}${col.hasSymbol ? ' <span class="text-[10px] opacity-90">❖</span>' : ''}</span>`;
-        bindLink(colCard, col);
+        fillCard(colCard, col, `${esc(col.title)}${col.hasSymbol ? ' <span class="text-[10px] opacity-90">❖</span>' : ''}`);
 
         // Κουμπί +/− για ανάπτυξη/σύμπτυξη των τμημάτων
         if (hasChildren) {
@@ -1003,8 +1003,7 @@
 
             const childCard = document.createElement('div');
             childCard.className = `drill-card relative w-[180px] min-h-[52px] px-2.5 py-2 text-[11px] leading-[1.28] flex items-center justify-center text-center ${getStyleClasses(child.style || 'med-grey')}`;
-            childCard.textContent = child.title;
-            bindLink(childCard, child);
+            fillCard(childCard, child);
 
             const hasSub = child.subChildren && child.subChildren.length > 0;
             childRow.appendChild(childCard);
@@ -1030,8 +1029,7 @@
 
                 const subCard = document.createElement('div');
                 subCard.className = `drill-card relative w-[135px] min-h-[50px] px-2.5 py-2 text-[11px] leading-[1.28] flex items-center justify-center text-center ${getStyleClasses(sub.style || 'light-grey')}`;
-                subCard.textContent = sub.title;
-                bindLink(subCard, sub);
+                fillCard(subCard, sub);
                 subRow.appendChild(subCard);
 
                 const hasGrandSub = sub.subChildren && sub.subChildren.length > 0;
@@ -1056,8 +1054,7 @@
 
                     const grandCard = document.createElement('div');
                     grandCard.className = `drill-card relative w-[90px] min-h-[46px] px-2.5 py-2 text-[11px] leading-[1.28] flex items-center justify-center text-center ${getStyleClasses(grand.style || 'light-grey')}`;
-                    grandCard.textContent = grand.title;
-                    bindLink(grandCard, grand);
+                    fillCard(grandCard, grand);
 
                     grandRow.appendChild(grandCard);
                     grandWrapper.appendChild(grandRow);
@@ -1132,7 +1129,7 @@
 
     /**
      * ============================================================================
-     * ΑΝΑΖΗΤΗΣΗ ΜΟΝΑΔΩΝ — κλικ σε αποτέλεσμα ανοίγει το PDF (ή, αν δεν έχει, δείχνει τη θέση του)
+     * ΑΝΑΖΗΤΗΣΗ ΜΟΝΑΔΩΝ — αποτέλεσμα με PDF είναι σύνδεσμος· χωρίς PDF δείχνει τη θέση του στο δέντρο
      * ============================================================================
      */
     function getAllSearchableUnits() {
@@ -1166,8 +1163,15 @@
         dropdown.innerHTML = `<div class="p-3 text-xs text-gray-500 text-center">Δεν βρέθηκαν αποτελέσματα για «${esc(query)}»</div>`;
       } else {
         matches.forEach((m) => {
-          const btn = document.createElement('button');
-          btn.type = 'button';
+          const hasPdf = !!m.node.pdf_url;
+          const btn = document.createElement(hasPdf ? 'a' : 'button');
+          if (hasPdf) {
+            btn.href = m.node.pdf_url;
+            btn.target = '_blank';
+            btn.rel = 'noopener noreferrer';
+          } else {
+            btn.type = 'button';
+          }
           btn.className = 'w-full text-left px-3 py-2 hover:bg-gray-50 transition flex flex-col';
           btn.innerHTML = `
             <div class="flex items-center justify-between gap-2">
@@ -1179,13 +1183,9 @@
           btn.onclick = () => {
             dropdown.classList.add('hidden');
             document.getElementById('org-search').value = '';
-            if (m.node.pdf_url) {
-              openLink(m.node);
-            } else if (m.rootId && isDrillable(m.rootId)) {
-              openDrillDown(m.rootId);
-            } else {
-              showMainChart();
-            }
+            if (hasPdf) return; // κανονικός σύνδεσμος: ανοίγει από το ίδιο το <a>
+            if (m.rootId && isDrillable(m.rootId)) openDrillDown(m.rootId);
+            else showMainChart();
           };
           dropdown.appendChild(btn);
         });
