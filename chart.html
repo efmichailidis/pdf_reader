@@ -143,34 +143,35 @@
       flex-shrink: 0;
     }
 
-    /* Info badge (i) top-right */
-    .info-badge {
+    /* Στοιχεία χωρίς PDF: δεν είναι κλικάρισμα */
+    .node-card.no-link,
+    .drill-card.no-link { cursor: default; }
+    .node-card.no-link:hover { transform: none; filter: none; }
+    .drill-card.no-link:hover { transform: none; filter: none; box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 1px 2px rgba(0, 0, 0, 0.1); }
+    .node-card:focus-visible,
+    .drill-card:focus-visible { outline: 2px solid #63c5ea; outline-offset: 2px; }
+
+    /* Μικρό κουμπί "+" που ανοίγει τη δομή μιας μονάδας */
+    .nav-btn {
       position: absolute;
-      top: -6px;
-      right: -6px;
-      width: 17px;
-      height: 17px;
+      width: 22px;
+      height: 22px;
       border-radius: 9999px;
       background-color: #ffffff;
-      color: #4b5563;
-      border: 1px solid #d1d5db;
-      font-size: 10px;
+      color: #5e1416;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      font-size: 15px;
       font-weight: 800;
-      font-style: italic;
+      line-height: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.22);
-      z-index: 15;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      z-index: 20;
+      cursor: pointer;
       transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
     }
-
-    .info-badge:hover {
-      transform: scale(1.2);
-      background-color: #5e1416;
-      color: #ffffff;
-      border-color: #5e1416;
-    }
+    .nav-btn:hover { transform: scale(1.15); background-color: #5e1416; color: #ffffff; }
 
     /* Custom subtle scrollbars */
     ::-webkit-scrollbar {
@@ -344,17 +345,7 @@
         </button>
       </div>
 
-      <!-- Right-edge Cyan/Blue Toggle Tab matching Image 2 -->
-      <button
-        id="drawer-edge-tab"
-        onclick="toggleSideDrawer()"
-        title="Πληροφορίες & Προσωπικό Μονάδας"
-        class="fixed right-0 top-[53px] z-30 w-7 h-7 bg-[#63c5ea] hover:bg-[#49b6e0] text-white flex items-center justify-center shadow transition cursor-pointer"
-      >
-        <svg id="drawer-tab-icon" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
-        </svg>
-      </button>
+
 
       <!-- Scrollable / Pannable Tree Canvas -->
       <div id="drill-viewport" class="w-full h-[calc(100dvh-53px)] overflow-auto grab-area flex items-start pt-5 pb-20 px-4 sm:px-12">
@@ -366,90 +357,7 @@
 
   </main>
 
-  <!-- ==================== SLIDE-OVER INFO & PERSONNEL DRAWER ==================== -->
-  <aside
-    id="info-drawer"
-    class="fixed top-[53px] right-0 bottom-0 w-[90vw] max-w-[400px] bg-white border-l border-gray-200 shadow-2xl z-40 transform translate-x-full transition-transform duration-250 ease-out flex flex-col"
-  >
-    <div class="p-4 bg-[#5e1416] text-white flex items-start justify-between gap-2 shrink-0">
-      <div>
-        <span id="drawer-badge" class="inline-block px-2 py-0.5 text-[10px] uppercase tracking-wider font-semibold bg-white/20 rounded mb-1">
-          Οργανωτική Μονάδα
-        </span>
-        <h2 id="drawer-title" class="text-base font-bold leading-snug">Τίτλος Μονάδας</h2>
-      </div>
-      <button onclick="closeSideDrawer()" class="p-1 rounded hover:bg-white/20 text-white transition" title="Κλείσιμο">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
-      </button>
-    </div>
 
-    <div class="p-5 flex-1 overflow-y-auto space-y-5 text-sm">
-      <!-- Head of Unit -->
-      <div class="bg-amber-50/70 p-3.5 rounded-lg border border-amber-200/80 flex items-center gap-3">
-        <div class="w-11 h-11 rounded-full bg-[#b05b09] text-white font-bold flex items-center justify-center shrink-0 text-sm shadow-xs" id="drawer-avatar">
-          ΔΝ
-        </div>
-        <div class="min-w-0 flex-1">
-          <div class="text-[10px] uppercase tracking-wider text-[#b05b09] font-bold">Επικεφαλής Μονάδας</div>
-          <div id="drawer-head" class="font-bold text-gray-900 truncate">Ονοματεπώνυμο</div>
-          <div id="drawer-role" class="text-xs text-gray-600 truncate">Διευθυντής / Προϊστάμενος</div>
-        </div>
-      </div>
-
-      <!-- Key Metrics -->
-      <div class="grid grid-cols-2 gap-3">
-        <div class="p-3 rounded-lg border border-gray-200 bg-white">
-          <div class="text-[11px] text-gray-500">Στελέχωση Μονάδας</div>
-          <div id="drawer-staff" class="text-base font-bold text-gray-900 mt-0.5">0 άτομα</div>
-        </div>
-        <div class="p-3 rounded-lg border border-gray-200 bg-white">
-          <div class="text-[11px] text-gray-500">Τηλέφωνο / Εσωτ.</div>
-          <div id="drawer-ext" class="text-sm font-bold text-[#5e1416] mt-0.5 truncate">210-3400</div>
-        </div>
-      </div>
-
-      <!-- Email -->
-      <div>
-        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Επικοινωνία Μονάδας</h3>
-        <p id="drawer-email" class="text-xs font-medium text-blue-700 bg-blue-50 px-3 py-2 rounded border border-blue-100">
-          info@company.gr
-        </p>
-      </div>
-
-      <!-- Personnel List (PERSON rows from Google Sheet V2) -->
-      <div>
-        <div class="flex items-center justify-between mb-2">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Προσωπικό Μονάδας</h3>
-          <span id="drawer-people-count" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">0</span>
-        </div>
-        <div id="drawer-personnel-list" class="space-y-2">
-          <!-- Populated dynamically with staff members -->
-        </div>
-      </div>
-
-      <!-- Responsibilities -->
-      <div>
-        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Περιγραφή & Αρμοδιότητες</h3>
-        <ul id="drawer-responsibilities" class="space-y-1.5 text-xs text-gray-700 leading-relaxed list-disc pl-4">
-        </ul>
-      </div>
-
-      <!-- Action button if this node has its own sub-chart -->
-      <div id="drawer-drill-action" class="pt-2 hidden">
-        <button
-          id="drawer-open-subchart-btn"
-          class="w-full py-2.5 px-4 bg-[#b05b09] hover:bg-[#964d07] text-white font-semibold text-xs rounded-lg shadow transition flex items-center justify-center gap-2"
-        >
-          <span>Άνοιγμα Αναλυτικού Οργανογράμματος Μονάδας</span>
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-          </svg>
-        </button>
-      </div>
-    </div>
-  </aside>
 
   <!-- LOAD STATUS -->
   <div id="load-status" class="hidden fixed inset-x-0 top-[70px] z-50 flex justify-center px-4 pointer-events-none">
@@ -459,19 +367,23 @@
   <script>
     /**
      * ============================================================================
-     * DATA LAYER — όλα τα δεδομένα έρχονται από το API (JSON με UNIT / PERSON rows)
+     * ΟΡΓΑΝΟΓΡΑΜΜΑ — κάθε στοιχείο του δέντρου είναι απλώς ένας σύνδεσμος προς PDF (pdf_url)
      * Το endpoint ορίζεται από: ?api=... στο URL, ή window.ORG_CHART_API_URL, ή '/api/chart'
      * ============================================================================
      */
-    const API_URL = new URLSearchParams(location.search).get('api') || window.ORG_CHART_API_URL || '/api/chart';
+    const API_URL = new URLSearchParams(location.search).get('api') || window.ORG_CHART_API_URL || '/api/v1/chartdata';
 
     let UNITS = {};          // id -> UNIT row
     let CHILDREN = {};       // parent_id -> [UNIT rows] (ταξινομημένα με order_index)
-    let PERSONNEL_LIST = []; // PERSON rows
     let HUB_ID = null;       // ο κόμβος από τον οποίο ξεκινούν οι διευθύνσεις (π.χ. Διοικητικό Συμβούλιο)
     let TOP_NODES = [];      // αλυσίδα "top" κόμβων (Γ.Σ. Μετόχων -> Δ.Σ.)
     let CENTRAL_ROWS = [];
     let BOTTOM_GENERAL_DIRECTORATES = [];
+
+    let currentZoom = 1;
+    let currentTreeData = null;
+    const collapsedColumns = new Set();
+    const expandedSubNodes = new Set();
 
     const STYLE_BY_THEME = {
       maroon: 'maroon',
@@ -486,13 +398,32 @@
       return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     }
 
-    function toBool(v) {
-      return ['ναι', 'yes', 'true', '1'].includes(String(v ?? '').trim().toLowerCase());
-    }
-
     function orderOf(u) {
       const n = parseInt(u.order_index, 10);
       return isNaN(n) ? 9999 : n;
+    }
+
+    // Επιτρέπονται μόνο http(s) και σχετικά links (όχι javascript:, data: κ.λπ.)
+    function safeUrl(v) {
+      const s = String(v ?? '').trim();
+      return /^https?:\/\//i.test(s) || (s.startsWith('/') && !s.startsWith('//')) ? s : '';
+    }
+
+    function openLink(node) {
+      if (node && node.pdf_url) window.open(node.pdf_url, '_blank', 'noopener,noreferrer');
+    }
+
+    // Κάνει ένα στοιχείο κλικάρισμα προς το PDF του. Χωρίς pdf_url παραμένει απλό (μη κλικάρισμο).
+    function bindLink(el, node) {
+      if (node && node.pdf_url) {
+        el.onclick = () => openLink(node);
+        el.setAttribute('role', 'link');
+        el.tabIndex = 0;
+        el.onkeydown = (e) => { if (e.target === el && e.key === 'Enter') openLink(node); };
+        el.title = 'Άνοιγμα PDF';
+      } else {
+        el.classList.add('no-link');
+      }
     }
 
     function indexData(payload) {
@@ -501,28 +432,18 @@
 
       UNITS = {};
       CHILDREN = {};
-      const units = rows.filter((r) => String(r.row_type || '').toUpperCase() === 'UNIT');
+      const units = rows.filter((r) => String(r.row_type || 'UNIT').toUpperCase() === 'UNIT');
       if (units.length === 0) throw new Error('Δεν βρέθηκαν εγγραφές τύπου UNIT.');
 
-      units.forEach((u) => { UNITS[u.id] = u; });
+      units.forEach((u) => {
+        u.pdf_url = safeUrl(u.pdf_url || u.link);
+        UNITS[u.id] = u;
+      });
       units.forEach((u) => {
         const p = u.parent_id || '';
         (CHILDREN[p] = CHILDREN[p] || []).push(u);
       });
       Object.values(CHILDREN).forEach((arr) => arr.sort((a, b) => orderOf(a) - orderOf(b)));
-
-      PERSONNEL_LIST = rows
-        .filter((r) => String(r.row_type || '').toUpperCase() === 'PERSON')
-        .map((p, i) => ({
-          person_id: p.id || `emp_${i}`,
-          unit_id: p.unit_id || p.parent_id || '',
-          full_name: p.full_name || p.title || '',
-          job_title: p.job_title || 'Στέλεχος',
-          is_head: toBool(p.is_head),
-          email: p.email || '',
-          phone: p.phone || '',
-          photo_url: p.photo_url || null
-        }));
 
       // Αλυσίδα top κόμβων
       TOP_NODES = [];
@@ -555,23 +476,6 @@
         .map((u) => mainNode(u));
     }
 
-    function getUnitPersonnelEarly(unitId) {
-      return PERSONNEL_LIST.filter((p) => p.unit_id === unitId);
-    }
-
-    function makeMeta(u) {
-      const ppl = getUnitPersonnelEarly(u.id);
-      const head = ppl.find((p) => p.is_head) || ppl[0];
-      return {
-        head: head ? head.full_name : '—',
-        role: head ? head.job_title : '',
-        staff: ppl.length ? `${ppl.length} άτομα` : '—',
-        ext: u.phone || '',
-        email: u.email || '',
-        responsibilities: u.description ? [u.description] : []
-      };
-    }
-
     function typeOf(u) {
       switch (u.color_theme) {
         case 'red': return 'red-chevron';
@@ -582,18 +486,14 @@
     }
 
     function mainNode(u) {
-      return { id: u.id, title: u.title, type: typeOf(u), meta: makeMeta(u) };
+      return { id: u.id, title: u.title, type: typeOf(u), pdf_url: u.pdf_url };
     }
 
+    // Έχει υποδομές που αξίζει να δείξουμε σε ξεχωριστή προβολή;
     function isDrillable(id) {
       const u = UNITS[id];
       if (!u || u.node_type === 'top') return false;
       return (CHILDREN[id] || []).some((c) => c.node_type !== 'sub_staff');
-    }
-
-    function findMainNodeById(id) {
-      const u = UNITS[id];
-      return u && u.parent_id === HUB_ID && isDrillable(id) ? mainNode(u) : null;
     }
 
     // Ο πιο κοντινός πρόγονος που βρίσκεται απευθείας κάτω από το hub (δηλ. φαίνεται στο κεντρικό οργανόγραμμα)
@@ -610,7 +510,7 @@
         id: u.id,
         title: u.title,
         style: STYLE_BY_THEME[u.color_theme] || 'med-grey',
-        meta: makeMeta(u)
+        pdf_url: u.pdf_url
       };
       if (level === 0) {
         node.hasSymbol = kids.length > 0;
@@ -629,18 +529,40 @@
         id: u.id,
         parentLabel: 'Διοίκηση',
         title: u.title,
+        pdf_url: u.pdf_url,
         hasSymbol: kids.length > 0,
         colorType: STYLE_BY_THEME[u.color_theme] || 'orange',
-        meta: makeMeta(u),
         columns: kids.map((k) => treeNode(k, 0))
       };
     }
 
     /**
      * ============================================================================
-     * RENDER MAIN ORG CHART
+     * RENDER MAIN ORG CHART (desktop)
      * ============================================================================
      */
+    // Μικρό κουμπί "+" πάνω στην κάρτα που ανοίγει την προβολή της δομής της μονάδας (δεν ανοίγει PDF)
+    function addNavButton(card, node, side) {
+      if (!isDrillable(node.id)) return;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'nav-btn';
+      b.textContent = '+';
+      b.title = 'Προβολή δομής';
+      b.setAttribute('aria-label', `Προβολή δομής — ${node.title}`);
+      if (side === 'top-right') {
+        b.style.top = '6px';
+        b.style.right = '6px';
+      } else {
+        b.style.top = '50%';
+        b.style.marginTop = '-11px';
+        b.style[side] = side === 'right' ? '10px' : '8px';
+        card.style[side === 'right' ? 'paddingRight' : 'paddingLeft'] = '36px';
+      }
+      b.onclick = (e) => { e.stopPropagation(); openDrillDown(node.id); };
+      card.appendChild(b);
+    }
+
     function renderMainChart() {
       // Top κόμβοι (Γενική Συνέλευση -> Διοικητικό Συμβούλιο)
       const topEl = document.getElementById('top-nodes');
@@ -652,9 +574,9 @@
           topEl.appendChild(line);
         }
         const card = document.createElement('div');
-        card.onclick = () => openNodeInfoDrawer(mainNode(u));
         card.className = 'node-card w-[260px] h-[52px] bg-[#5e1416] text-white font-bold text-[13px] flex items-center justify-center text-center px-3 shadow-xs';
         card.textContent = u.title;
+        bindLink(card, mainNode(u));
         topEl.appendChild(card);
       });
 
@@ -672,9 +594,9 @@
         if (row.left) {
           if (row.left.farLeft) {
             const farCard = document.createElement('div');
-            farCard.onclick = () => openNodeInfoDrawer(row.left.farLeft);
             farCard.className = 'node-card w-[148px] h-[54px] bg-[#c6c8ca] text-white font-semibold text-[12px] leading-tight flex items-center justify-center text-center px-2 whitespace-pre-line';
             farCard.textContent = row.left.farLeft.title;
+            bindLink(farCard, row.left.farLeft);
             leftWrap.appendChild(farCard);
 
             const hConnector = document.createElement('div');
@@ -685,8 +607,7 @@
           const leftCard = document.createElement('div');
           const leftIsChevron = row.left.type === 'red-chevron';
           const leftIsRust = row.left.type === 'rust-chevron';
-          leftCard.onclick = () => isDrillable(row.left.id) ? openDrillDown(row.left.id) : openNodeInfoDrawer(row.left);
-          leftCard.className = `node-card w-[285px] h-[48px] text-white font-semibold text-[12.5px] leading-tight flex items-center justify-center text-center whitespace-pre-line ${
+          leftCard.className = `node-card relative w-[285px] h-[48px] text-white font-semibold text-[12.5px] leading-tight flex items-center justify-center text-center whitespace-pre-line ${
             leftIsChevron
               ? 'bg-[#cc1c2f] chevron-left font-bold'
               : leftIsRust
@@ -694,6 +615,8 @@
                 : 'bg-[#6e6f71] px-3'
           }`;
           leftCard.textContent = row.left.title;
+          bindLink(leftCard, row.left);
+        //   addNavButton(leftCard, row.left, 'right');
           leftWrap.appendChild(leftCard);
         }
 
@@ -708,11 +631,12 @@
         if (row.right) {
           const rightCard = document.createElement('div');
           const isRust = row.right.type === 'rust-chevron';
-          rightCard.onclick = () => isDrillable(row.right.id) ? openDrillDown(row.right.id) : openNodeInfoDrawer(row.right);
-          rightCard.className = `node-card w-[285px] h-[48px] text-white font-bold text-[12.5px] leading-tight flex items-center justify-center text-center whitespace-pre-line chevron-right ${
+          rightCard.className = `node-card relative w-[285px] h-[48px] text-white font-bold text-[12.5px] leading-tight flex items-center justify-center text-center whitespace-pre-line chevron-right ${
             isRust ? 'bg-[#c84426]' : 'bg-[#cc1c2f]'
           }`;
           rightCard.textContent = row.right.title;
+          bindLink(rightCard, row.right);
+        //   addNavButton(rightCard, row.right, 'left');
           rightWrap.appendChild(rightCard);
         }
 
@@ -748,15 +672,21 @@
         bus.appendChild(cell);
 
         const card = document.createElement('div');
-        card.onclick = () => isDrillable(gd.id) ? openDrillDown(gd.id) : openNodeInfoDrawer(gd);
-        card.className = 'node-card ribbon-down w-full min-h-[118px] bg-[#b05b09] text-white font-bold text-[11.5px] leading-[1.28] flex items-center justify-center text-center px-1.5 pt-2 whitespace-pre-line shadow-xs';
+        card.className = 'node-card ribbon-down relative w-full min-h-[118px] bg-[#b05b09] text-white font-bold text-[11.5px] leading-[1.28] flex items-center justify-center text-center px-1.5 pt-2 whitespace-pre-line shadow-xs';
         card.textContent = gd.title;
+        bindLink(card, gd);
+        // addNavButton(card, gd, 'top-right');
         bottomContainer.appendChild(card);
       });
 
       renderMobileChart();
     }
 
+    /**
+     * ============================================================================
+     * RENDER MAIN ORG CHART (κινητό / tablet — λίστα)
+     * ============================================================================
+     */
     function renderMobileChart() {
       const el = document.getElementById('main-chart-mobile');
       if (!el) return;
@@ -769,20 +699,26 @@
       }[type] || 'bg-[#6e6f71]');
 
       const makeCard = (node, bg, extra = '') => {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.className = `node-card w-full min-h-[48px] rounded-md px-3 py-2.5 text-white text-[13px] leading-snug font-semibold flex items-center justify-between gap-2 text-left shadow-xs ${bg} ${extra}`;
+        const c = document.createElement('div');
+        c.className = `node-card w-full min-h-[48px] rounded-md px-3 py-2.5 text-white text-[13px] leading-snug font-semibold flex items-center justify-between gap-2 text-left shadow-xs ${bg} ${extra}`;
         const label = document.createElement('span');
+        label.className = 'flex-1';
         label.textContent = node.title;
-        b.appendChild(label);
+        c.appendChild(label);
         if (isDrillable(node.id)) {
-          const chev = document.createElement('span');
-          chev.className = 'text-lg leading-none opacity-80 shrink-0';
-          chev.textContent = '›';
-          b.appendChild(chev);
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'nav-btn';
+          b.style.position = 'static';
+          b.style.flexShrink = '0';
+          b.textContent = '+';
+          b.title = 'Προβολή δομής';
+          b.setAttribute('aria-label', `Προβολή δομής — ${node.title}`);
+          b.onclick = (e) => { e.stopPropagation(); openDrillDown(node.id); };
+          c.appendChild(b);
         }
-        b.onclick = () => isDrillable(node.id) ? openDrillDown(node.id) : openNodeInfoDrawer(node);
-        return b;
+        bindLink(c, node);
+        return c;
       };
 
       const heading = (text) => {
@@ -836,7 +772,7 @@
         const grid = document.createElement('div');
         grid.className = 'grid grid-cols-2 md:grid-cols-3 gap-2 pb-6';
         BOTTOM_GENERAL_DIRECTORATES.forEach((gd) => {
-          grid.appendChild(makeCard(gd, 'bg-[#b05b09]', 'min-h-[64px] text-[12px] justify-center text-center'));
+          grid.appendChild(makeCard(gd, 'bg-[#b05b09]', 'min-h-[64px] text-[12px] text-center'));
         });
         el.appendChild(grid);
       }
@@ -844,25 +780,15 @@
 
     /**
      * ============================================================================
-     * RENDER DRILL-DOWN VIEW (IMAGE 2)
-     * FIX 1: Clicking a Red Directorate box opens the right-hand drawer with staff.
-     *        Expanding/collapsing a Red Directorate is done via the dedicated '+' / '−' button!
-     * FIX 2: 'Τμήμα Ανάπτυξης Εφαρμογών' stays strictly anchored at the top of its
-     *        sub-tree container (flex-col items-start) and expands downward cleanly.
+     * DRILL-DOWN VIEW (δομή μιας μονάδας)
      * ============================================================================
      */
-    let currentZoom = 1;
-    let currentTreeData = null;
-    let collapsedColumns = new Set();
-    const expandedSubNodes = new Set();
-
     function openDrillDown(nodeId) {
+      const treeData = buildDynamicOrgTree(nodeId);
+      if (!treeData) return;
       collapsedColumns.clear();
       expandedSubNodes.clear();
       currentZoom = 1;
-
-      const treeData = buildDynamicOrgTree(nodeId);
-      if (!treeData) return;
       currentTreeData = treeData;
 
       document.getElementById('main-chart-view').classList.add('hidden');
@@ -879,6 +805,7 @@
     }
 
     function showMainChart() {
+      currentTreeData = null;
       document.getElementById('drilldown-view').classList.add('hidden');
       const mainView = document.getElementById('main-chart-view');
       mainView.classList.remove('hidden');
@@ -887,7 +814,6 @@
       document.getElementById('btn-back-main').classList.add('hidden');
       document.getElementById('btn-back-main').classList.remove('flex');
       document.getElementById('breadcrumb-subtitle').textContent = 'Κεντρική Δομή Διοίκησης & Γενικών Διευθύνσεων';
-      closeSideDrawer();
     }
 
     function getStyleClasses(style) {
@@ -909,19 +835,6 @@
         default:
           return 'bg-[#8d8f92] text-white font-medium';
       }
-    }
-
-    function createInfoBadge(nodeObj) {
-      const badge = document.createElement('button');
-      badge.type = 'button';
-      badge.className = 'info-badge';
-      badge.textContent = 'i';
-      badge.title = 'Προβολή στοιχείων & προσωπικού μονάδας';
-      badge.onclick = (e) => {
-        e.stopPropagation();
-        openNodeInfoDrawer(nodeObj);
-      };
-      return badge;
     }
 
     function createSubtreeToggle(node, subtree, units) {
@@ -959,11 +872,11 @@
       if (!currentTreeData) return;
       const isNarrow = window.matchMedia('(max-width: 767px)').matches;
 
-      // 1. Top Parent Node: "Διοίκηση"
+      // 1. Κουμπί επιστροφής: "Διοίκηση"
       const topParentBtn = document.createElement('button');
       topParentBtn.type = 'button';
       topParentBtn.onclick = () => showMainChart();
-      topParentBtn.title = 'Επιστροφή στη Διοίκηση (Κεντρικό Οργανόγραμμα)';
+      topParentBtn.title = 'Επιστροφή στο κεντρικό οργανόγραμμα';
       topParentBtn.className = 'drill-card w-[178px] h-[52px] bg-[#5e1416] text-white font-bold text-[13px] flex items-center justify-center gap-2 px-3 cursor-pointer';
       topParentBtn.innerHTML = `
         <svg class="w-4 h-4 text-[#e06d3b] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -973,29 +886,26 @@
       `;
       container.appendChild(topParentBtn);
 
-      // Orange vertical connector line down to Active Directorate
       const line1 = document.createElement('div');
       line1.className = 'w-[1.5px] h-[34px] bg-[#e68a2e] shrink-0';
       container.appendChild(line1);
 
-      // 2. Active Directorate Card inside pale yellow halo
+      // 2. Ενεργή μονάδα μέσα σε ανοιχτόχρωμο halo
       const activeHalo = document.createElement('div');
       activeHalo.className = 'active-gd-halo';
 
       const activeCard = document.createElement('div');
-      activeCard.onclick = () => openNodeInfoDrawer(currentTreeData);
-      activeCard.className = `drill-card relative w-[184px] min-h-[54px] px-3 py-2 text-[12px] leading-snug flex items-center justify-center text-center cursor-pointer ${getStyleClasses(currentTreeData.colorType || 'orange')}`;
+      activeCard.className = `drill-card relative w-[184px] min-h-[54px] px-3 py-2 text-[12px] leading-snug flex items-center justify-center text-center ${getStyleClasses(currentTreeData.colorType || 'orange')}`;
       activeCard.innerHTML = `<span>${esc(currentTreeData.title)}${currentTreeData.hasSymbol ? ' <span class="text-[10px] opacity-90">❖</span>' : ''}</span>`;
-      activeCard.appendChild(createInfoBadge(currentTreeData));
+      bindLink(activeCard, currentTreeData);
       activeHalo.appendChild(activeCard);
       container.appendChild(activeHalo);
 
-      // Orange vertical stem down to Horizontal Bus
       const line2 = document.createElement('div');
       line2.className = 'w-[1.5px] h-[24px] bg-[#e68a2e] shrink-0';
       container.appendChild(line2);
 
-      // 3. Horizontal Distribution Bus & Columns Row
+      // 3. Στήλες
       const cols = currentTreeData.columns || [];
       if (cols.length === 0) return;
 
@@ -1008,7 +918,7 @@
         const colContainer = document.createElement('div');
         colContainer.className = 'relative flex flex-col items-start';
 
-        // Horizontal Bus Segment at top of each column
+        // Οριζόντια μπάρα πάνω από κάθε στήλη (μόνο σε μεγάλες οθόνες)
         const busRow = document.createElement('div');
         busRow.className = 'relative w-full h-[22px] flex items-center justify-start shrink-0';
 
@@ -1028,29 +938,21 @@
           busRow.appendChild(hLine);
         }
 
-        // Vertical drop into column card (aligned with column center 86px)
         const vDrop = document.createElement('div');
         vDrop.className = 'w-[1.5px] h-full bg-[#e68a2e] ml-[86px]';
         busRow.appendChild(vDrop);
         if (!isNarrow) colContainer.appendChild(busRow);
 
-        // Column Header Card (Grey Office or Red Directorate)
         const isCollapsed = collapsedColumns.has(col.id);
         const hasChildren = col.children && col.children.length > 0;
         const cardWidth = col.style === 'red' ? 'w-[184px]' : 'w-[172px]';
 
         const colCard = document.createElement('div');
-        colCard.className = `drill-card relative ${cardWidth} min-h-[56px] px-2.5 py-2 text-[11.5px] leading-[1.28] flex items-center justify-center text-center cursor-pointer ${getStyleClasses(col.style)}`;
+        colCard.className = `drill-card relative ${cardWidth} min-h-[56px] px-2.5 py-2 text-[11.5px] leading-[1.28] flex items-center justify-center text-center ${getStyleClasses(col.style)}`;
         colCard.innerHTML = `<span>${esc(col.title)}${col.hasSymbol ? ' <span class="text-[10px] opacity-90">❖</span>' : ''}</span>`;
+        bindLink(colCard, col);
 
-        // FIX 1: Clicking the red box (or grey office box) ALWAYS opens the right-hand slide-over drawer with people!
-        colCard.onclick = () => {
-          openNodeInfoDrawer(col);
-        };
-
-        colCard.appendChild(createInfoBadge(col));
-
-        // FIX 1: Dedicated '+' / '−' button on Red Directorates (any column with children) to expand/collapse!
+        // Κουμπί +/− για ανάπτυξη/σύμπτυξη των τμημάτων
         if (hasChildren) {
           const expandBtn = document.createElement('button');
           expandBtn.type = 'button';
@@ -1068,28 +970,23 @@
 
         colContainer.appendChild(colCard);
 
-        // Vertical Spine + Children List under Red Directorates
         if (hasChildren && !isCollapsed) {
           const childrenWrapper = document.createElement('div');
           childrenWrapper.className = 'w-full flex flex-col items-start pl-3 pt-0';
 
-          // Short vertical drop from Red card down to left spine
           const topDrop = document.createElement('div');
           topDrop.className = 'w-[1.5px] h-[18px] bg-[#e68a2e] ml-[28px] shrink-0';
           childrenWrapper.appendChild(topDrop);
 
-          // Left-aligned vertical spine container
           const spineList = document.createElement('div');
           spineList.className = 'relative flex flex-col items-start gap-3.5 pl-[14px] ml-[4px]';
 
           col.children.forEach((child, cIdx) => {
             const isLastChild = cIdx === col.children.length - 1;
 
-            // Strict top-to-bottom block so parent card stays pinned at top while children expand downward below it
             const childRow = document.createElement('div');
             childRow.className = 'relative flex flex-col items-start w-full';
 
-            // Vertical spine line segment along the left of this department row
             const vSpine = document.createElement('div');
             vSpine.className = 'absolute left-[-14px] top-0 w-[1.5px] bg-[#e68a2e] pointer-events-none';
             if (cIdx === 0) {
@@ -1097,32 +994,21 @@
               bridgeTop.className = 'absolute left-[-14px] top-0 w-[39.5px] h-[1.5px] bg-[#e68a2e] pointer-events-none';
               childRow.appendChild(bridgeTop);
             }
-            // Spine stops at center of this parent card (26px) if last child, otherwise spans full height of row + gap
             vSpine.style.height = isLastChild ? '27px' : 'calc(100% + 14px)';
             childRow.appendChild(vSpine);
 
-            // Horizontal tick pointing into the parent department card (at fixed Y = 26px from top of childRow)
             const hTick = document.createElement('div');
             hTick.className = 'absolute left-[-14px] top-[26px] w-[14px] h-[1.5px] bg-[#e68a2e] pointer-events-none';
             childRow.appendChild(hTick);
 
-            // 1. FIRST in DOM: Department Card (stays fixed at top of childRow)
             const childCard = document.createElement('div');
-            childCard.className = `drill-card relative w-[180px] min-h-[52px] px-2.5 py-2 text-[11px] leading-[1.28] flex items-center justify-center text-center cursor-pointer ${getStyleClasses(child.style || 'med-grey')}`;
+            childCard.className = `drill-card relative w-[180px] min-h-[52px] px-2.5 py-2 text-[11px] leading-[1.28] flex items-center justify-center text-center ${getStyleClasses(child.style || 'med-grey')}`;
             childCard.textContent = child.title;
+            bindLink(childCard, child);
 
             const hasSub = child.subChildren && child.subChildren.length > 0;
-
-            // Clicking the department box opens the personnel slide-over drawer
-            childCard.onclick = () => {
-              openNodeInfoDrawer(child);
-            };
-
-            childCard.appendChild(createInfoBadge(child));
-
             childRow.appendChild(childCard);
 
-            // Keep nested cards within the department's width as the branch opens.
             if (hasSub) {
               const subWrapper = document.createElement('div');
               subWrapper.className = 'nested-units relative flex flex-col items-start gap-3 pl-[16px] ml-[29px] pt-3.5';
@@ -1133,7 +1019,6 @@
                 const subRow = document.createElement('div');
                 subRow.className = 'relative flex flex-col items-start w-full';
 
-                // Vertical spine connecting bottom of childCard down to subCard (25px from top of subRow)
                 const subVSpine = document.createElement('div');
                 subVSpine.className = 'absolute left-[-16px] top-[-14px] w-[1.5px] bg-[#e68a2e] pointer-events-none';
                 subVSpine.style.height = isLastSub ? '40px' : 'calc(100% + 26px)';
@@ -1144,20 +1029,12 @@
                 subRow.appendChild(subHTick);
 
                 const subCard = document.createElement('div');
-                subCard.className = `drill-card relative w-[135px] min-h-[50px] px-2.5 py-2 text-[11px] leading-[1.28] flex items-center justify-center text-center cursor-pointer ${getStyleClasses(sub.style || 'light-grey')}`;
+                subCard.className = `drill-card relative w-[135px] min-h-[50px] px-2.5 py-2 text-[11px] leading-[1.28] flex items-center justify-center text-center ${getStyleClasses(sub.style || 'light-grey')}`;
                 subCard.textContent = sub.title;
-
-                const hasGrandSub = sub.subChildren && sub.subChildren.length > 0;
-
-                subCard.onclick = () => {
-                  openNodeInfoDrawer(sub);
-                };
-
-                subCard.appendChild(createInfoBadge(sub));
-
+                bindLink(subCard, sub);
                 subRow.appendChild(subCard);
 
-                // Level 3 Nested (e.g., Ομάδα Σχεδιασμού under Γραφείο Front-End)
+                const hasGrandSub = sub.subChildren && sub.subChildren.length > 0;
                 if (hasGrandSub) {
                   const grandWrapper = document.createElement('div');
                   grandWrapper.className = 'nested-units relative flex flex-col items-start gap-2.5 pl-[16px] ml-[29px] pt-3.5';
@@ -1178,10 +1055,9 @@
                     grandRow.appendChild(gHTick);
 
                     const grandCard = document.createElement('div');
-                    grandCard.className = `drill-card relative w-[90px] min-h-[46px] px-2.5 py-2 text-[11px] leading-[1.28] flex items-center justify-center text-center cursor-pointer ${getStyleClasses(grand.style || 'light-grey')}`;
+                    grandCard.className = `drill-card relative w-[90px] min-h-[46px] px-2.5 py-2 text-[11px] leading-[1.28] flex items-center justify-center text-center ${getStyleClasses(grand.style || 'light-grey')}`;
                     grandCard.textContent = grand.title;
-                    grandCard.onclick = () => openNodeInfoDrawer(grand);
-                    grandCard.appendChild(createInfoBadge(grand));
+                    bindLink(grandCard, grand);
 
                     grandRow.appendChild(grandCard);
                     grandWrapper.appendChild(grandRow);
@@ -1211,24 +1087,21 @@
 
     /**
      * ============================================================================
-     * ZOOM & DRAG PAN CONTROLS FOR DRILL-DOWN CANVAS
+     * ZOOM & DRAG PAN
      * ============================================================================
      */
     function adjustZoom(delta) {
       currentZoom = Math.min(1.55, Math.max(0.55, +(currentZoom + delta).toFixed(2)));
-      const zoomContainer = document.getElementById('drill-zoom-container');
-      zoomContainer.style.transform = `scale(${currentZoom})`;
+      document.getElementById('drill-zoom-container').style.transform = `scale(${currentZoom})`;
     }
 
     function resetZoomPan() {
       currentZoom = 1;
-      const zoomContainer = document.getElementById('drill-zoom-container');
-      zoomContainer.style.transform = 'scale(1)';
+      document.getElementById('drill-zoom-container').style.transform = 'scale(1)';
       const viewport = document.getElementById('drill-viewport');
       viewport.scrollTo({ top: 0, left: (viewport.scrollWidth - viewport.clientWidth) / 2, behavior: 'smooth' });
     }
 
-    // Mouse drag-to-pan on drill-down viewport
     (function enableDragPan() {
       const viewport = document.getElementById('drill-viewport');
       if (!viewport) return;
@@ -1247,197 +1120,31 @@
         scrollTop = viewport.scrollTop;
       });
 
-      window.addEventListener('mouseup', () => {
-        isDown = false;
-      });
+      window.addEventListener('mouseup', () => { isDown = false; });
 
       viewport.addEventListener('mousemove', (e) => {
         if (!isDown) return;
         e.preventDefault();
-        const x = e.pageX - viewport.offsetLeft;
-        const y = e.pageY - viewport.offsetTop;
-        viewport.scrollLeft = scrollLeft - (x - startX);
-        viewport.scrollTop = scrollTop - (y - startY);
+        viewport.scrollLeft = scrollLeft - (e.pageX - viewport.offsetLeft - startX);
+        viewport.scrollTop = scrollTop - (e.pageY - viewport.offsetTop - startY);
       });
     })();
 
     /**
      * ============================================================================
-     * SLIDE-OVER INFO & PERSONNEL DRAWER
-     * Displays Head of Unit + Complete Personnel List for clicked unit
-     * ============================================================================
-     */
-    let isDrawerOpen = false;
-
-    function getUnitPersonnel(unitId) {
-      if (!unitId) return [];
-      return PERSONNEL_LIST.filter((p) => p.unit_id === unitId);
-    }
-
-    function openNodeInfoDrawer(node) {
-      const title = (node.title || '').replace(/\n/g, ' ');
-      const unitPeople = getUnitPersonnel(node.id);
-      const headPerson = unitPeople.find((p) => p.is_head) || unitPeople[0];
-
-      const meta = node.meta || {
-        head: headPerson ? headPerson.full_name : 'Επικεφαλής Μονάδας',
-        role: headPerson ? headPerson.job_title : 'Προϊστάμενος / Διευθυντής',
-        staff: unitPeople.length > 0 ? `${unitPeople.length} άτομα` : '12 άτομα',
-        ext: headPerson?.phone || '210-3500',
-        email: headPerson?.email || 'department@enterprise.gr',
-        responsibilities: [
-          `Εποπτεία, συντονισμός και εύρυθμη λειτουργία της μονάδας «${title}».`,
-          'Υλοποίηση στόχων και αναφορά αποτελεσμάτων στη Διοίκηση.'
-        ]
-      };
-
-      const displayHeadName = headPerson ? headPerson.full_name : meta.head;
-      const displayHeadRole = headPerson ? headPerson.job_title : meta.role;
-      const displayPhone = meta.ext || headPerson?.phone || '—';
-      const displayEmail = meta.email || headPerson?.email || '—';
-
-      document.getElementById('drawer-title').textContent = title;
-      document.getElementById('drawer-head').textContent = displayHeadName;
-      document.getElementById('drawer-role').textContent = displayHeadRole;
-      document.getElementById('drawer-staff').textContent = unitPeople.length > 0 ? `${unitPeople.length} καταχωρημένα άτομα` : meta.staff;
-      document.getElementById('drawer-ext').textContent = displayPhone;
-      document.getElementById('drawer-email').textContent = displayEmail;
-
-      // Avatar initials
-      const initials = displayHeadName
-        .split(' ')
-        .slice(0, 2)
-        .map((w) => w[0])
-        .join('')
-        .toUpperCase();
-      document.getElementById('drawer-avatar').textContent = initials || 'ΟΜ';
-
-      // Badge label
-      let badgeLabel = 'Οργανωτική Μονάδα';
-      if (title.includes('Γενική Διεύθυνση') || title.includes('Γεν.')) badgeLabel = 'Γενική Διεύθυνση';
-      else if (title.includes('Διεύθυνση')) badgeLabel = 'Διεύθυνση';
-      else if (title.includes('Τμήμα')) badgeLabel = 'Τμήμα';
-      else if (title.includes('Γραφείο') || title.includes('Ομάδα')) badgeLabel = 'Γραφείο / Ομάδα';
-      document.getElementById('drawer-badge').textContent = badgeLabel;
-
-      // Render Personnel List
-      const peopleListEl = document.getElementById('drawer-personnel-list');
-      const peopleCountEl = document.getElementById('drawer-people-count');
-      peopleListEl.innerHTML = '';
-      peopleCountEl.textContent = unitPeople.length;
-
-      if (unitPeople.length === 0) {
-        peopleListEl.innerHTML = `
-          <div class="p-3 rounded-lg border border-dashed border-gray-300 bg-gray-50 text-xs text-gray-500 text-center">
-            Δεν υπάρχουν καταχωρημένα μέλη προσωπικού για αυτή τη μονάδα. Προσθέστε γραμμές <code>PERSON</code> με <code>unit_id = ${esc(node.id || 'id')}</code> στα δεδομένα του API.
-          </div>
-        `;
-      } else {
-        // Sort head first
-        const sorted = [...unitPeople].sort((a, b) => (b.is_head === true) - (a.is_head === true));
-        sorted.forEach((person) => {
-          const pInitials = person.full_name
-            .split(' ')
-            .slice(0, 2)
-            .map((w) => w[0])
-            .join('')
-            .toUpperCase();
-          const card = document.createElement('div');
-          card.className = 'p-2.5 rounded-lg border border-gray-200 bg-white hover:border-gray-300 transition flex items-start gap-2.5';
-          card.innerHTML = `
-            <div class="w-8 h-8 rounded-full ${person.is_head ? 'bg-[#b05b09] text-white' : 'bg-gray-200 text-gray-700'} font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
-              ${esc(pInitials || 'ΥΠ')}
-            </div>
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-1.5">
-                <span class="text-xs font-bold text-gray-900 truncate">${esc(person.full_name)}</span>
-                ${person.is_head ? '<span class="px-1.5 py-0.2 bg-amber-100 text-amber-800 text-[9px] font-bold rounded">Επικεφαλής</span>' : ''}
-              </div>
-              <div class="text-[11px] text-gray-600 truncate">${esc(person.job_title)}</div>
-              <div class="text-[10px] text-gray-500 mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
-                ${person.email ? `<span class="text-blue-700">${esc(person.email)}</span>` : ''}
-                ${person.phone ? `<span>Τηλ: ${esc(person.phone)}</span>` : ''}
-              </div>
-            </div>
-          `;
-          peopleListEl.appendChild(card);
-        });
-      }
-
-      // Responsibilities list
-      const listEl = document.getElementById('drawer-responsibilities');
-      listEl.innerHTML = '';
-      (meta.responsibilities || []).forEach((item) => {
-        const li = document.createElement('li');
-        li.textContent = item;
-        listEl.appendChild(li);
-      });
-
-      // Show drill-down button if node is a top-level unit and we are on main view
-      const drillActionBox = document.getElementById('drawer-drill-action');
-      const drillBtn = document.getElementById('drawer-open-subchart-btn');
-      if (node.id && findMainNodeById(node.id) && document.getElementById('drilldown-view').classList.contains('hidden')) {
-        drillActionBox.classList.remove('hidden');
-        drillBtn.onclick = () => {
-          closeSideDrawer();
-          openDrillDown(node.id);
-        };
-      } else {
-        drillActionBox.classList.add('hidden');
-      }
-
-      openSideDrawer();
-    }
-
-    function openSideDrawer() {
-      isDrawerOpen = true;
-      document.getElementById('info-drawer').classList.remove('translate-x-full');
-      document.getElementById('drawer-tab-icon').classList.add('rotate-180');
-    }
-
-    function closeSideDrawer() {
-      isDrawerOpen = false;
-      document.getElementById('info-drawer').classList.add('translate-x-full');
-      document.getElementById('drawer-tab-icon').classList.remove('rotate-180');
-    }
-
-    function toggleSideDrawer() {
-      if (isDrawerOpen) {
-        closeSideDrawer();
-      } else {
-        if (currentTreeData) openNodeInfoDrawer(currentTreeData);
-        else openSideDrawer();
-      }
-    }
-
-    /**
-     * ============================================================================
-     * INSTANT SEARCH ACROSS ALL DIRECTORATES, DEPARTMENTS & PERSONNEL
+     * ΑΝΑΖΗΤΗΣΗ ΜΟΝΑΔΩΝ — κλικ σε αποτέλεσμα ανοίγει το PDF (ή, αν δεν έχει, δείχνει τη θέση του)
      * ============================================================================
      */
     function getAllSearchableUnits() {
-      const results = [];
-      Object.values(UNITS).forEach((u) => {
+      return Object.values(UNITS).map((u) => {
         const parent = UNITS[u.parent_id];
-        results.push({
-          kind: 'unit',
+        return {
           title: u.title,
           parent: parent ? parent.title : 'Κεντρικό Οργανόγραμμα',
           rootId: mainAncestorId(u.id),
-          nodeObj: mainNode(u)
-        });
+          node: mainNode(u)
+        };
       });
-      PERSONNEL_LIST.forEach((p) => {
-        const u = UNITS[p.unit_id];
-        results.push({
-          kind: 'person',
-          title: p.full_name,
-          parent: `${p.job_title} • ${u ? u.title : ''}`,
-          rootId: u ? mainAncestorId(u.id) : null,
-          nodeObj: u ? mainNode(u) : null
-        });
-      });
-      return results;
     }
 
     function handleSearch(query) {
@@ -1450,10 +1157,9 @@
         return;
       }
 
-      const allUnits = getAllSearchableUnits();
-      const matches = allUnits.filter(
-        (u) => u.title.toLowerCase().includes(q) || u.parent.toLowerCase().includes(q)
-      ).slice(0, 12);
+      const matches = getAllSearchableUnits()
+        .filter((u) => u.title.toLowerCase().includes(q) || u.parent.toLowerCase().includes(q))
+        .slice(0, 12);
 
       dropdown.innerHTML = '';
       if (matches.length === 0) {
@@ -1466,16 +1172,19 @@
           btn.innerHTML = `
             <div class="flex items-center justify-between gap-2">
               <span class="text-xs font-semibold text-gray-900">${esc(m.title)}</span>
-              <span class="text-[9px] font-bold px-1.5 py-0.5 rounded ${m.kind === 'person' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-600'}">${m.kind === 'person' ? 'Στέλεχος' : 'Μονάδα'}</span>
+              ${m.node.pdf_url ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700">PDF</span>' : ''}
             </div>
             <span class="text-[10px] text-gray-500 truncate">${esc(m.parent)}</span>
           `;
           btn.onclick = () => {
             dropdown.classList.add('hidden');
             document.getElementById('org-search').value = '';
-            if (m.rootId && isDrillable(m.rootId)) openDrillDown(m.rootId); else showMainChart();
-            if (m.nodeObj) {
-              openNodeInfoDrawer(m.nodeObj);
+            if (m.node.pdf_url) {
+              openLink(m.node);
+            } else if (m.rootId && isDrillable(m.rootId)) {
+              openDrillDown(m.rootId);
+            } else {
+              showMainChart();
             }
           };
           dropdown.appendChild(btn);
@@ -1522,14 +1231,13 @@
       }
     }
 
-    // Close search dropdown when clicking outside
+    // Κλείσιμο dropdown αναζήτησης με κλικ εκτός
     document.addEventListener('click', (e) => {
       if (!e.target.closest('#org-search') && !e.target.closest('#search-results')) {
         document.getElementById('search-results').classList.add('hidden');
       }
     });
 
-    // Initialize Main Chart on Page Load
     window.addEventListener('DOMContentLoaded', () => {
       loadChart();
       window.matchMedia('(max-width: 767px)').addEventListener('change', () => {
