@@ -12,7 +12,7 @@ function safeEqual(a, b) {
 }
 
 function hasValidKey(url) {
-  const expected = process.env.ORGCHART_KEY;
+  const expected = process.env.ACCESS_KEY;
   if (!expected) return false; // χωρίς ρύθμιση, κλειστό
   return safeEqual(url.searchParams.get('key'), expected);
 }
