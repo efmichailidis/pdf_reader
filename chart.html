@@ -708,18 +708,18 @@
         const c = document.createElement('div');
         c.className = `node-card relative w-full min-h-[48px] rounded-md px-3 py-2.5 text-white text-[13px] leading-snug font-semibold flex items-center justify-between gap-2 text-left shadow-xs ${bg} ${extra}`;
         fillCard(c, node, null, 'flex-1');
-        if (isDrillable(node.id)) {
-          const b = document.createElement('button');
-          b.type = 'button';
-          b.className = 'nav-btn';
-          b.style.position = 'static';
-          b.style.flexShrink = '0';
-          b.textContent = '+';
-          b.title = 'Προβολή δομής';
-          b.setAttribute('aria-label', `Προβολή δομής — ${node.title}`);
-          b.onclick = (e) => { e.stopPropagation(); openDrillDown(node.id); };
-          c.appendChild(b);
-        }
+        // if (isDrillable(node.id)) {
+        //   const b = document.createElement('button');
+        //   b.type = 'button';
+        //   b.className = 'nav-btn';
+        //   b.style.position = 'static';
+        //   b.style.flexShrink = '0';
+        //   b.textContent = '+';
+        //   b.title = 'Προβολή δομής';
+        //   b.setAttribute('aria-label', `Προβολή δομής — ${node.title}`);
+        //   b.onclick = (e) => { e.stopPropagation(); openDrillDown(node.id); };
+        //   c.appendChild(b);
+        // }
         return c;
       };
 
