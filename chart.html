@@ -624,7 +624,7 @@
                 : 'bg-[#6e6f71] px-3'
           }`;
           fillCard(leftCard, row.left);
-          addNavButton(leftCard, row.left, 'right');
+        //   addNavButton(leftCard, row.left, 'right');
           leftWrap.appendChild(leftCard);
         }
 
@@ -643,7 +643,7 @@
             isRust ? 'bg-[#c84426]' : 'bg-[#cc1c2f]'
           }`;
           fillCard(rightCard, row.right);
-          addNavButton(rightCard, row.right, 'left');
+        //   addNavButton(rightCard, row.right, 'left');
           rightWrap.appendChild(rightCard);
         }
 
@@ -681,7 +681,7 @@
         const card = document.createElement('div');
         card.className = 'node-card ribbon-down relative w-full min-h-[118px] bg-[#b05b09] text-white font-bold text-[11.5px] leading-[1.28] flex items-center justify-center text-center px-1.5 pt-2 whitespace-pre-line shadow-xs';
         fillCard(card, gd);
-        addNavButton(card, gd, 'top-right');
+        // addNavButton(card, gd, 'top-right');
         bottomContainer.appendChild(card);
       });
 
