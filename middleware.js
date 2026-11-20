@@ -32,7 +32,7 @@ export default function middleware(request) {
     const isFromAdmin = referer.includes('/admin.html');
 
     // ΑνΔΕΝ είναι σε iframe ΚΑΙ ΔΕΝ προέρχεται από το admin.html -> Μπλοκάρισμα
-    if (fetchDest === 'document' && !isFromAdmin && !hasValidKey(url)) {
+    if (fetchDest === 'document' && !isFromAdmin) {
       return new Response('⛔ Δεν επιτρέπεται η πρόσβαση.', {
         status: 403,
         headers: { 'Content-Type': 'text/html; charset=utf-8' },
@@ -48,6 +48,13 @@ export default function middleware(request) {
     });
   }
 
+  if (!hasValidKey(url)) {
+      return new Response('⛔ Δεν επιτρέπεται η πρόσβαση.', {
+        status: 403,
+        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      });
+  }
+  
   // --- ΕΛΕΓΧΟΣ 2: Basic Auth για Admin & API ---
   if (pathname === '/admin.html' || pathname.startsWith('/api/manage-pdf')) {
     const USERNAME = process.env.ADMIN_USERNAME || 'admin';
