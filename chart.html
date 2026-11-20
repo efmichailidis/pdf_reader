@@ -463,7 +463,7 @@
      * Το endpoint ορίζεται από: ?api=... στο URL, ή window.ORG_CHART_API_URL, ή '/api/chart'
      * ============================================================================
      */
-    const API_URL = new URLSearchParams(location.search).get('api') || window.ORG_CHART_API_URL || '/api/v1/chartdata';
+    const API_URL = new URLSearchParams(location.search).get('api') || window.ORG_CHART_API_URL || '/api/chart';
 
     let UNITS = {};          // id -> UNIT row
     let CHILDREN = {};       // parent_id -> [UNIT rows] (ταξινομημένα με order_index)
