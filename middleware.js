@@ -21,17 +21,20 @@ export default function middleware(request) {
   const url = new URL(request.url);
   const pathname = url.pathname;
 
-  if (hasValidKey(url)) {
-      return new Response(null, {
-      status: 200,
-      headers: {
-        'x-middleware-next': '1',
-        'Content-Security-Policy': `frame-ancestors 'self'`,
-      },
-    });
-  }
+  // if (hasValidKey(url)) {
+  //     return new Response(null, {
+  //     status: 200,
+  //     headers: {
+  //       'x-middleware-next': '1',
+  //       'Content-Security-Policy': `frame-ancestors 'self'`,
+  //     },
+  //   });
+  // }
   
-  const ALLOWED_DOMAIN = 'https://app.sklavenitismentor.gr';
+  const ALLOWED_DOMAINS = [
+    'https://app.sklavenitismentor.gr',
+    'https://localhost/',
+  ];
 
   // --- ΕΛΕΓΧΟΣ 1: Πρόσβαση στο Viewer (Iframe Ή Κλικ από Admin) ---
   if (pathname === '/index.html' || pathname === '/viewer.html' || pathname === '/evretirio_beta.html' || pathname === '/chart.html' || pathname === '/evretirio.html') {
@@ -53,7 +56,7 @@ export default function middleware(request) {
       status: 200,
       headers: {
         'x-middleware-next': '1',
-        'Content-Security-Policy': `frame-ancestors 'self' ${ALLOWED_DOMAIN}`,
+        'Content-Security-Policy': `frame-ancestors 'self' ${ALLOWED_DOMAINS.join(' ')}`,
       },
     });
   }
