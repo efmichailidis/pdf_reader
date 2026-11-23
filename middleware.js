@@ -21,6 +21,16 @@ export default function middleware(request) {
   const url = new URL(request.url);
   const pathname = url.pathname;
 
+  if (hasValidKey(url)) {
+      return new Response(null, {
+      status: 200,
+      headers: {
+        'x-middleware-next': '1',
+        'Content-Security-Policy': `frame-ancestors 'self'`,
+      },
+    });
+  }
+  
   const ALLOWED_DOMAIN = 'https://app.sklavenitismentor.gr';
 
   // --- ΕΛΕΓΧΟΣ 1: Πρόσβαση στο Viewer (Iframe Ή Κλικ από Admin) ---
@@ -46,13 +56,6 @@ export default function middleware(request) {
         'Content-Security-Policy': `frame-ancestors 'self' ${ALLOWED_DOMAIN}`,
       },
     });
-  }
-
-  if (!hasValidKey(url)) {
-      return new Response('⛔ Δεν επιτρέπεται η πρόσβαση.', {
-        status: 403,
-        headers: { 'Content-Type': 'text/html; charset=utf-8' },
-      });
   }
   
   // --- ΕΛΕΓΧΟΣ 2: Basic Auth για Admin & API ---
