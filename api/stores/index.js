@@ -20,7 +20,7 @@ export default async function handler(req, res) {
     const sheets = google.sheets({ version: 'v4', auth: oauth2Client });
 
     const response = await sheets.spreadsheets.values.batchGet({
-      spreadsheetId: process.env.SPREADSHEET_ID,
+      spreadsheetId: process.env.SPREADSHEET_ID ?? '1Z_7tnvoCZVqlTHx_J5Xlu6-c1NfHFiXBIrtRLM5nvXU',
       ranges: ['Καταστήματα!A1:Z', 'Εγκαταστάσεις!A1:Z'],
     });
 
