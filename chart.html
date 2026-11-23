@@ -775,7 +775,7 @@
       if (BOTTOM_GENERAL_DIRECTORATES.length) {
         el.appendChild(heading('Γενικές Διευθύνσεις'));
         const grid = document.createElement('div');
-        grid.className = 'grid grid-cols-2 md:grid-cols-3 gap-2 pb-6';
+        grid.className = 'grid grid-cols-1 md:grid-cols-2 gap-2 pb-6';
         BOTTOM_GENERAL_DIRECTORATES.forEach((gd) => {
           grid.appendChild(makeCard(gd, 'bg-[#b05b09]', 'min-h-[64px] text-[12px] text-center'));
         });
