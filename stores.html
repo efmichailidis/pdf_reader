@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Καταστήματα & εγκαταστάσεις</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      
+      <p class="sub" id="source">Φόρτωση δεδομένων…</p>
+    </div>
+    <div class="actions">
+      <button class="btn" id="refresh" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5"/></svg>
+        Ανανέωση
+      </button>
+      <!-- <label class="btn" for="file" title="Εφεδρικά: φόρτωση από αρχείο αν το API δεν απαντά">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg>
+        Από αρχείο
+      </label> -->
+      <input type="file" id="file" accept=".json,application/json" class="sr">
+    </div>
+  </header>
+
+  <div id="banner"></div>
+
+  <div class="tabs" role="tablist" id="tabs"></div>
+
+
+  <div class="toolbar" id="toolbar">
+    <label class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <span class="sr">Αναζήτηση</span>
+      <input id="q" type="search" placeholder="Κωδικός, ονομασία, διεύθυνση, ΤΚ, πόλη ή email" autocomplete="off">
+    </label>
+    <span id="facets" style="display:contents"></span>
+    <label class="sr" for="sortsel">Ταξινόμηση</label>
+    <select id="sortsel" class="sortsel"></select>
+  </div>
+  <div class="chips" id="chips"></div>
+
+  <div class="summary">
+    <div id="count" aria-live="polite"></div>
+    <details class="note" id="note"></details>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead id="thead"></thead>
+      <tbody id="tbody"><tr><td class="loading">Φόρτωση δεδομένων από το API…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+<dialog id="mapdlg" aria-labelledby="mapdlg-t">
+  <h2 id="mapdlg-t">Ο χάρτης δεν άνοιξε</h2>
+  <p class="muted">Η σελίδα που φιλοξενεί αυτή τη λίστα δεν επιτρέπει το άνοιγμα νέων καρτελών, και το Google Maps δεν ανοίγει μέσα σε πλαίσιο. Αντιγράψτε τον σύνδεσμο ή τη διεύθυνση και ανοίξτε τα στον browser.</p>
+  <p class="dlg-addr" id="mapdlg-addr"></p>
+  <input id="mapdlg-url" readonly aria-label="Σύνδεσμος Google Maps">
+  <div class="dlg-actions">
+    <button class="btn" type="button" data-copy="url">Αντιγραφή συνδέσμου</button>
+    <button class="btn" type="button" data-copy="addr">Αντιγραφή διεύθυνσης</button>
+    <button class="btn link" type="button" data-close>Κλείσιμο</button>
+  </div>
+  <p class="muted dlg-status" id="mapdlg-status" aria-live="polite"></p>
+</dialog>
+<section id="diag" hidden aria-label="Διαγνωστικά">
+  <div class="diag-head"><strong>Διαγνωστικά συνδέσμων χάρτη</strong>
+    <span><button class="btn" type="button" data-diag-copy>Αντιγραφή</button> <button class="btn link" type="button" data-diag-close>Κλείσιμο</button></span></div>
+  <dl></dl>
+  <pre></pre>
+</section>
+<div class="drop" id="drop">Αφήστε εδώ το αρχείο JSON</div>
+
+<!-- Staffbase Plugins Client SDK (@staffbase/plugins-client-sdk 3.1.5, Apache-2.0), ενσωματωμένο για να μη χρειάζεται πρόσβαση σε CDN -->
+<script>
+/**
+ * Bundle of @staffbase/plugins-client-sdk
+ * @file Staffbase plugins client SDK for JavaScript
+ * @see https://github.com/Staffbase/plugins-client-sdk#readme
+ * @version 3.0.0-alpha.4
+ *
+ * @author Stefan Staude <stefan.staude@staffbase.com>
+ * @author Daniel Große <daniel.grosse@staffbase.com>
+ *
+ * @copyright  2026
+ * @license Apache-2.0
+ */
+!function(e,a){"object"==typeof exports&&"undefined"!=typeof module?a(exports):"function"==typeof define&&define.amd?define(["exports"],a):a((e="undefined"!=typeof globalThis?globalThis:e||self)["plugins-client-sdk"]={})}(this,(function(e){"use strict";function a(e){return e&&e.__esModule&&Object.prototype.hasOwnProperty.call(e,"default")?e.default:e}var n,o,l,t,i,r={exports:{}},c=r.exports;n||(n=1,function(e){var a,n;a=c,n=function(){var e=function(){},a="undefined",n=typeof window!==a&&typeof window.navigator!==a&&/Trident\/|MSIE /.test(window.navigator.userAgent),o=["trace","debug","info","warn","error"],l={},t=null;function i(e,a){var n=e[a];if("function"==typeof n.bind)return n.bind(e);try{return Function.prototype.bind.call(n,e)}catch(a){return function(){return Function.prototype.apply.apply(n,[e,arguments])}}}function r(){console.log&&(console.log.apply?console.log.apply(console,arguments):Function.prototype.apply.apply(console.log,[console,arguments])),console.trace&&console.trace()}function c(){for(var n=this.getLevel(),l=0;l<o.length;l++){var t=o[l];this[t]=l<n?e:this.methodFactory(t,n,this.name)}if(this.log=this.debug,typeof console===a&&n<this.levels.SILENT)return"No console available for logging"}function s(e){return function(){typeof console!==a&&(c.call(this),this[e].apply(this,arguments))}}function d(o,l,t){return function(o){return"debug"===o&&(o="log"),typeof console!==a&&("trace"===o&&n?r:void 0!==console[o]?i(console,o):void 0!==console.log?i(console,"log"):e)}(o)||s.apply(this,arguments)}function m(e,n){var i,r,s,m=this,u="loglevel";function f(){var e;if(typeof window!==a&&u){try{e=window.localStorage[u]}catch(e){}if(typeof e===a)try{var n=window.document.cookie,o=encodeURIComponent(u),l=n.indexOf(o+"=");-1!==l&&(e=/^([^;]+)/.exec(n.slice(l+o.length+1))[1])}catch(e){}return void 0===m.levels[e]&&(e=void 0),e}}function y(e){var a=e;if("string"==typeof a&&void 0!==m.levels[a.toUpperCase()]&&(a=m.levels[a.toUpperCase()]),"number"==typeof a&&a>=0&&a<=m.levels.SILENT)return a;throw new TypeError("log.setLevel() called with invalid level: "+e)}"string"==typeof e?u+=":"+e:"symbol"==typeof e&&(u=void 0),m.name=e,m.levels={TRACE:0,DEBUG:1,INFO:2,WARN:3,ERROR:4,SILENT:5},m.methodFactory=n||d,m.getLevel=function(){return null!=s?s:null!=r?r:i},m.setLevel=function(e,n){return s=y(e),!1!==n&&function(e){var n=(o[e]||"silent").toUpperCase();if(typeof window!==a&&u){try{return void(window.localStorage[u]=n)}catch(e){}try{window.document.cookie=encodeURIComponent(u)+"="+n+";"}catch(e){}}}(s),c.call(m)},m.setDefaultLevel=function(e){r=y(e),f()||m.setLevel(e,!1)},m.resetLevel=function(){s=null,function(){if(typeof window!==a&&u){try{window.localStorage.removeItem(u)}catch(e){}try{window.document.cookie=encodeURIComponent(u)+"=; expires=Thu, 01 Jan 1970 00:00:00 UTC"}catch(e){}}}(),c.call(m)},m.enableAll=function(e){m.setLevel(m.levels.TRACE,e)},m.disableAll=function(e){m.setLevel(m.levels.SILENT,e)},m.rebuild=function(){if(t!==m&&(i=y(t.getLevel())),c.call(m),t===m)for(var e in l)l[e].rebuild()},i=y(t?t.getLevel():"WARN");var p=f();null!=p&&(s=y(p)),c.call(m)}(t=new m).getLogger=function(e){if("symbol"!=typeof e&&"string"!=typeof e||""===e)throw new TypeError("You must supply a name when creating a logger.");var a=l[e];return a||(a=l[e]=new m(e,t.methodFactory)),a};var u=typeof window!==a?window.log:void 0;return t.noConflict=function(){return typeof window!==a&&window.log===t&&(window.log=u),t},t.getLoggers=function(){return l},t.default=t,t},e.exports?e.exports=n():a.log=n()}(r));var s=i?t:(i=1,t="function"==typeof Object.entries?Object.entries:function(){if(l)return o;l=1;var e=function(e,a){return Object.prototype.hasOwnProperty.call(e,a)},a=function(e,a){return Object.prototype.propertyIsEnumerable.call(e,a)};return o=function(n){if(null==n)throw new TypeError("Cannot convert undefined or null to object");var o=[];for(var l in n)e(n,l)&&a(n,l)&&o.push([l,n[l]]);return o}}());const d={ios:"dev-ios",android:"dev-android",version:"app-version",mobile:"app-mobile",native:"app-native",instanceUrl:"instance-url",openLink:"openExternalLink",nativeUpload:"nativeFileUpload",nativeShare:"nativeShareDialog",langInfos:"getLanguageInfos",branchDefaultLang:"getBranchDefaultLanguage",prefContentLang:"getPreferredContentLocale",userContentLocale:"getUserContentLocale"},m=a(s)(d).reduce(((e,a)=>{let[n,o]=a;return e[o]=n,e}),{});var u={af:{key:"af",locale:"af_ZA",name:"Afrikaans",localizedName:"Afrikaans"},am:{key:"am",locale:"am_ET",name:"አማርኛ",localizedName:"Amharic"},ar:{key:"ar",locale:"ar_SA",name:"العربية (المملكة العربية السعودية)",direction:"rtl",localizedName:"Arabic (Saudi Arabia)"},arAE:{key:"arAE",locale:"ar_AE",name:"العربية (الإمارات العربية المتحدة)",direction:"rtl",localizedName:"Arabic (United Arab Emirates)"},arEG:{key:"arEG",locale:"ar_EG",name:"العربية (مصر)",direction:"rtl",localizedName:"Arabic (Egypt)"},bg:{key:"bg",locale:"bg_BG",name:"български",localizedName:"Bulgarian"},bn:{key:"bn",locale:"bn_BD",name:"বাংলা",localizedName:"Bengali"},bs:{key:"bs",locale:"bs_BA",name:"Bosanski",localizedName:"Bosnian"},cs:{key:"cs",locale:"cs_CZ",name:"Čeština",localizedName:"Czech"},cy:{key:"cy",locale:"cy_GB",name:"Cymraeg",localizedName:"Welsh"},da:{key:"da",locale:"da_DK",name:"Dansk",localizedName:"Danish"},de:{key:"de",locale:"de_DE",name:"Deutsch",localizedName:"German"},el:{key:"el",locale:"el_GR",name:"Ελληνικά",localizedName:"Greek"},en:{key:"en",locale:"en_US",name:"English",localizedName:"English"},enGB:{key:"enGB",locale:"en_GB",name:"English (United Kingdom)",localizedName:"English (United Kingdom)"},es:{key:"es",locale:"es_ES",name:"Español (España)",localizedName:"Spanish (Spain)"},esMX:{key:"esMX",locale:"es_MX",name:"Español (México)",localizedName:"Spanish (Mexico)"},et:{key:"et",locale:"et_EE",name:"Eesti keel",localizedName:"Estonian"},fi:{key:"fi",locale:"fi_FI",name:"Suomi",localizedName:"Finnish"},fr:{key:"fr",locale:"fr_FR",name:"Français (France)",localizedName:"French (France)"},frCA:{key:"frCA",locale:"fr_CA",name:"Français (Canada)",localizedName:"French (Canada)"},he:{key:"he",locale:"he_IL",name:"עִבְרִית",direction:"rtl",localizedName:"Hebrew"},hi:{key:"hi",locale:"hi_IN",name:"िन्दी",localizedName:"Hindi"},hk:{key:"hk",locale:"zh_HK",name:"繁體中文",localizedName:"Chinese traditional"},ht:{key:"ht",locale:"ht_HT",name:"kreyòl ayisyen",localizedName:"Haitian Creole"},hr:{key:"hr",locale:"hr_HR",name:"Hrvatski",localizedName:"Croatian"},hu:{key:"hu",locale:"hu_HU",name:"Magyar",localizedName:"Hungarian"},id:{key:"id",locale:"id_ID",name:"Bahasa Indonesia",localizedName:"Indonesian"},is:{key:"is",locale:"is_IS",name:"Íslenska",localizedName:"Icelandic"},it:{key:"it",locale:"it_IT",name:"Italiano",localizedName:"Italian"},ja:{key:"ja",locale:"ja_JP",name:"日本語",localizedName:"Japanese"},kl:{key:"kl",locale:"kl_GL",name:"Kalaallisut",localizedName:"Greenlandic"},km:{key:"km",locale:"km_KH",name:"ខ្មែរ",localizedName:"Khmer"},ko:{key:"ko",locale:"ko_KR",name:"한국어",localizedName:"Korean"},lo:{key:"lo",locale:"lo_LA",name:"ລາວ",localizedName:"Lao"},lt:{key:"lt",locale:"lt_LT",name:"Lietuvių",localizedName:"Lithuanian"},lv:{key:"lv",locale:"lv_LV",name:"Latviešu",localizedName:"Latvian"},mg:{key:"mg",locale:"mg_MG",name:"Malagasy",localizedName:"Malagasy"},mk:{key:"mk",locale:"mk_MK",name:"Македонски",localizedName:"Macedonian"},mh:{key:"mh",locale:"mh_MH",name:"Kajin M̧ajeļ",localizedName:"Marshallese"},mi:{key:"mi",locale:"mi_NZ",name:"Māori",localizedName:"Māori"},mn:{key:"mn",locale:"mn_MN",name:"монгол",localizedName:"Mongolian"},mr:{key:"mr",locale:"mr_IN",name:"मराठी",localizedName:"Marathi"},ms:{key:"ms",locale:"ms_MY",name:"Bahasa Melayu",localizedName:"Malay"},my:{key:"my",locale:"my_MM",name:"Burmese",localizedName:"Burmese"},ne:{key:"ne",locale:"ne_NP",name:"नेपाली",localizedName:"Nepali"},nl:{key:"nl",locale:"nl_NL",name:"Nederlands",localizedName:"Dutch"},nlBE:{key:"nlBE",locale:"nl_BE",name:"Vlaemsch",localizedName:"Flemish"},no:{key:"no",locale:"no_NO",name:"Norsk",localizedName:"Norwegian"},pl:{key:"pl",locale:"pl_PL",name:"Polski",localizedName:"Polish"},pt:{key:"pt",locale:"pt_PT",name:"Português (Portugal)",localizedName:"Portuguese (Portugal)"},ptBR:{key:"ptBR",locale:"pt_BR",name:"Português (Brasil)",localizedName:"Portuguese (Brazil)"},ro:{key:"ro",locale:"ro_RO",name:"Română",localizedName:"Romanian"},ru:{key:"ru",locale:"ru_RU",name:"Русский",localizedName:"Russian"},si:{key:"si",locale:"si_LK",name:"සිංහල",localizedName:"Sinhala"},sk:{key:"sk",locale:"sk_SK",name:"Slovenský",localizedName:"Slovak"},sl:{key:"sl",locale:"sl_SI",name:"Slovenščina",localizedName:"Slovenian"},sq:{key:"sq",locale:"sq_AL",name:"Shqip",localizedName:"Albanian"},sr:{key:"sr",locale:"sr_RS",name:"Српски",localizedName:"Serbian"},so:{key:"so",locale:"so_SO",name:"Af-Soomaali",localizedName:"Somali"},sv:{key:"sv",locale:"sv_SE",name:"Svenska",localizedName:"Swedish"},sw:{key:"sw",locale:"sw_TZ",name:"Swahili",localizedName:"Swahili"},ta:{key:"ta",locale:"ta_IN",name:"தமிழ்",localizedName:"Tamil"},tl:{key:"tl",locale:"tl_PH",name:"Filipino",localizedName:"Filipino"},th:{key:"th",locale:"th_TH",name:"ภาษาไทย",localizedName:"Thai"},tr:{key:"tr",locale:"tr_TR",name:"Türkçe",localizedName:"Turkish"},uk:{key:"uk",locale:"uk_UA",name:"Українська",localizedName:"Ukrainian"},ur:{key:"ur",locale:"ur_PK",name:"اُردُو",direction:"rtl",localizedName:"Urdu"},vi:{key:"vi",locale:"vi_VN",name:"Tiếng Việt",localizedName:"Vietnamese"},zh:{key:"zh",locale:"zh_CN",name:"简体中文",localizedName:"Chinese"},zu:{key:"zu",locale:"zu_ZA",name:"isiZulu",localizedName:"Zulu"}};const f=navigator.userAgent||navigator.vendor||window.opera||"",y=(p=(p=window&&window.navigator.language)&&p.split(/-|_/)[0]||p,-1!==["nb","nn"].indexOf(p)&&(p="no"),"iw"===p&&(p="he"),p);var p;"undefined"!=typeof window&&(window.Staffbase=window.Staffbase||{},window.Staffbase.platform=window.Staffbase.platform||{version:"3.4",mobile:/Android|webOS|iPhone|iPad|BlackBerry|BB10|IEMobile|Opera Mini/i.test(f),native:!1});const g=()=>"ios"===window.Staffbase.platform.native||/iPhone|iPad|iPod/i.test(f),h=e=>{window.open(e,"_blank")},v=()=>u[y]||u.en,k=e=>{const a=v().locale;if(!e)return a;if(Array.isArray(e)){const n=e.indexOf(a);return e[n]||e[0]}{const n=Object.keys(e),o=n.indexOf(a);return n[o]||n[0]}};let w=null;const N=async function(e){for(var a=arguments.length,n=new Array(a>1?a-1:0),o=1;o<a;o++)n[o-1]=arguments[o];switch(e){case d.version:return window.Staffbase.platform.version;case d.native:return(()=>{const e=/safari/i.test(f);return"android"===window.Staffbase.platform.native||"ios"===window.Staffbase.platform.native||!e&&g()})();case d.mobile:return window.Staffbase.platform.mobile;case d.ios:return g();case d.android:return"android"===window.Staffbase.platform.native||/Android/i.test(f);case d.openLink:return h.apply(null,n);case d.langInfos:return(()=>{const e=v();return{contentLanguage:e,branchLanguages:u,branchDefaultLanguage:e,deviceLanguage:e,contentLanguages:u}})();case d.branchDefaultLang:return v();case d.prefContentLang:return k.apply(null,n);case d.userContentLocale:return v().locale;case d.instanceUrl:return window.location.ancestorOrigins&&window.location.ancestorOrigins[0]||document.referrer||"";case d.nativeUpload:case d.nativeShare:return;default:throw new Error("Command "+e+" not supported by driver")}};var z="HELLO",b="SUCCESS",L="INVOCATION",_="ERROR";const S={[d.openLink]:"openLink",[d.nativeUpload]:"nativeFileUpload",[d.nativeShare]:"nativeShareDialog",[d.langInfos]:"getPluginLanguageInfo",[d.prefContentLang]:"getPreferredContentLocale"};let E={};function A(){const e=Math.floor(65536*(1+Math.random())).toString(16).substring(1);return e in E?A():(E[e]={resolve:null,reject:null,promise:null},e)}const I=()=>{const e=A(),a=new Promise((function(a,n){E[e].resolve=a,E[e].reject=n}));return E[e].promise=a,e},C=(e,a)=>{e in E&&(E[e].reject(a),delete E[e])},M=e=>{if(!(e in E))throw new Error("Tried to get an unknown ["+e+"] promise.");return E[e].promise};let B=null;const T=()=>{window.removeEventListener("message",U),B=null},U=async e=>{let a,n,o;try{({data:[a,n,o]}=e)}catch(e){return}switch(a){case b:((e,a)=>{e in E&&(E[e].resolve(a),delete E[e])})(n,o);break;case _:C(n,o);break;default:return}},P=e=>async function(a){switch(a){case d.version:case d.native:case d.mobile:case d.ios:case d.android:case d.branchDefaultLang:case d.instanceUrl:return e[m[a]];case d.langInfos:case d.openLink:case d.nativeUpload:case d.nativeShare:case d.prefContentLang:for(var n=arguments.length,o=new Array(n>1?n-1:0),l=1;l<n;l++)o[l-1]=arguments[l];return R(I())(S[a],o);default:throw new Error("Command "+a+" not supported by driver")}},R=e=>(a,n)=>(window.parent.postMessage([L,e,a,n],"*"),M(e));let D;const O=async()=>{const e=(()=>{if(B)return B;const e=I();let a;B=M(e).then((e=>(window.clearTimeout(a),P((e=>{let{platform:a,language:n,instance:o}=e;return{mobile:a.mobile,version:a.version,native:!!a.native,ios:"ios"===a.native,android:"android"===a.native,langInfos:n,branchDefaultLanguage:n.branchDefaultLanguage,instanceUrl:o&&o.url||""}})(e))))),window.addEventListener("message",U);const n=function(){let o=arguments.length>0&&void 0!==arguments[0]?arguments[0]:500;a=window.setTimeout((()=>{o<1200?n(1.2*o):(C(e,"No answer from Staffbase App"),T())}),o),window.parent.postMessage([z,e,[]],"*")};return n(),B})(),a=w||(w=new Promise((e=>{setTimeout((function(){e(N)}),500)})),w),n=[e],o=n.concat(a);return Promise.race(n).then((e=>{D=e})),await Promise.race(o)},x=async function(e){D||(D=O());const a=await D;for(var n=arguments.length,o=new Array(n>1?n-1:0),l=1;l<n;l++)o[l-1]=arguments[l];return a(e,...o)},F=async()=>x(d.version),j=async()=>x(d.native),G=/^[v^~<>=]*?(\d+)(?:\.([x*]|\d+)(?:\.([x*]|\d+)(?:\.([x*]|\d+))?(?:-([\da-z\-]+(?:\.[\da-z\-]+)*))?(?:\+[\da-z\-]+(?:\.[\da-z\-]+)*)?)?)?$/i,H=e=>{if("string"!=typeof e)throw new TypeError("Invalid argument expected string");const a=e.match(G);if(!a)throw new Error(`Invalid argument not valid semver ('${e}' received)`);return a.shift(),a},K=e=>"*"===e||"x"===e||"X"===e,V=e=>{const a=parseInt(e,10);return isNaN(a)?e:a},Z=(e,a)=>{if(K(e)||K(a))return 0;const[n,o]=((e,a)=>typeof e!=typeof a?[String(e),String(a)]:[e,a])(V(e),V(a));return n>o?1:n<o?-1:0},q=(e,a)=>{for(let n=0;n<Math.max(e.length,a.length);n++){const o=Z(e[n]||"0",a[n]||"0");if(0!==o)return o}return 0},X=async()=>x(d.ios),J=async()=>{let[e,a,n]=await Promise.all([j(),F(),X()]);const o=a.indexOf("-");return a=a.substring(0,-1!=o?o:a.length),!(((e,a)=>{const n=H(e),o=H(a),l=n.pop(),t=o.pop(),i=q(n,o);return 0!==i?i:l&&t?q(l.split("."),t.split(".")):l||t?l?-1:1:0})(a,"3.5")<0&&e&&n)};e.deviceCanDownload=async()=>J(),e.getAppVersion=async()=>F(),e.getBranchDefaultLanguage=async()=>(async()=>x(d.langInfos).then((e=>e.branchDefaultLanguage)))(),e.getBranchLanguages=async()=>(async()=>x(d.langInfos).then((e=>e.branchLanguages)))(),e.getContentLanguages=async()=>(async()=>x(d.langInfos).then((e=>e.contentLanguages)))(),e.getInstanceUrl=async()=>(async()=>x(d.instanceUrl))(),e.getPreferredContentLocale=async e=>(async e=>x(d.prefContentLang,e))(e),e.getUserContentLocale=async()=>(async()=>x(d.langInfos).then((e=>e.userContentLocale)))(),e.isAndroidDevice=async()=>(async()=>x(d.android))(),e.isIosDevice=async()=>X(),e.isMobileApp=async()=>(async()=>x(d.mobile))(),e.isNativeApp=async()=>j(),e.openLink=async e=>(async e=>x(d.openLink,e))(e),e.openLinkExternal=async e=>(async e=>x(d.openLink,e,{inAppBrowser:!1}))(e),e.openLinkInternal=async e=>(async e=>x(d.openLink,e,{inAppBrowser:!0}))(e),e.openNativeFileDialog=async()=>x(d.nativeUpload),e.openNativeShareDialog=async e=>(async e=>x(d.nativeShare,e))(e)}));
+
+</script>
+<script src="/js/app.js"></script>
+</body>
+</html>
