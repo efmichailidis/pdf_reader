@@ -1,7 +1,7 @@
 (function(){
 "use strict";
 // Endpoint που επιστρέφει { success, items: { stores: [[...]], facilities: [[...]] } }
-const API_URL = "/api/sheets";
+const API_URL = "/api/stores";
 
 const coll = new Intl.Collator("el",{numeric:true,sensitivity:"base"});
 const nf = new Intl.NumberFormat("el-GR",{maximumFractionDigits:2});
